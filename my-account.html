@@ -99,6 +99,9 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+    .cabinet__grid--single {
+      grid-template-columns: 1fr;
+    }
     .cabinet__row {
       display: flex;
       justify-content: space-between;
@@ -536,7 +539,7 @@
 <section class="my__account--section section--padding">
     <div class="container">
         <div class="cabinet">
-            <p class="cabinet__welcome">Здравствуйте, Никита. Управляйте заказами, адресом доставки и платежами в одном месте.</p>
+            <p class="cabinet__welcome">Здравствуйте, Никита. Управляйте заказами и адресом доставки в одном месте.</p>
             <div class="cabinet__layout">
                 <aside class="cabinet__card">
                     <h2 class="cabinet__title">Личный кабинет</h2>
@@ -570,7 +573,7 @@
                         </div>
                     </div>
 
-                    <div class="cabinet__grid">
+                    <div class="cabinet__grid cabinet__grid--single">
                         <section class="cabinet__card">
                             <h3 class="cabinet__title">Адрес доставки</h3>
                             <div class="cabinet__row"><span class="cabinet__label">Получатель</span><span class="cabinet__value">Никита Алехин</span></div>
@@ -579,13 +582,7 @@
                             <div class="cabinet__row"><span class="cabinet__label">Комментарий</span><span class="cabinet__value">Доставка с 10:00 до 18:00</span></div>
                         </section>
 
-                        <section class="cabinet__card">
-                            <h3 class="cabinet__title">Платежные данные</h3>
-                            <div class="cabinet__row"><span class="cabinet__label">Карта</span><span class="cabinet__value">•••• •••• •••• 4821</span></div>
-                            <div class="cabinet__row"><span class="cabinet__label">Способ оплаты</span><span class="cabinet__value">Онлайн (ЮKassa)</span></div>
-                            <div class="cabinet__row"><span class="cabinet__label">Последняя оплата</span><span class="cabinet__value">11 февраля 2026</span></div>
-                            <div class="cabinet__row"><span class="cabinet__label">Статус</span><span class="cabinet__value">Активно</span></div>
-                        </section>
+                        
                     </div>
 
                     <section class="cabinet__card">

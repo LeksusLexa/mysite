@@ -790,7 +790,17 @@
         if (openBtn) openBtn.click();
       });
 
-      applyFilter("all");
+      var params = new URLSearchParams(window.location.search);
+      var initialFilter = params.get("filter") || "all";
+      var activeButton = filters.find(function (btn) {
+        return (btn.getAttribute("data-filter") || "all") === initialFilter;
+      });
+      if (activeButton) {
+        filters.forEach(function (btn) { btn.classList.toggle("is-active", btn === activeButton); });
+        applyFilter(initialFilter);
+      } else {
+        applyFilter("all");
+      }
     })();
   </script>
   <script src="assets/js/script.js"></script>

@@ -937,7 +937,7 @@ newsletterPopup();
       price: Number(item && item.price) || 0,
       img: (item && item.img) || "",
       qty: Math.max(1, parseInt(item && item.qty, 10) || 1),
-      url: (item && item.url) || "product-details.html",
+      url: (item && item.url) || "shop.html",
     }))
     .filter((item) => Boolean(item.id));
 
@@ -1068,10 +1068,10 @@ newsletterPopup();
     itemsRoot.innerHTML = cart.map((item) => `
       <${rowTag} class="minicart__product--items global-minicart-item" data-id="${item.id}">
         <div class="global-minicart-thumb">
-          <a href="${item.url || "product-details.html"}"><img src="${item.img || ""}" alt="product-img"></a>
+          <a href="${item.url || "shop.html"}"><img src="${item.img || ""}" alt="product-img"></a>
         </div>
         <div class="global-minicart-body">
-          <a class="global-minicart-title" href="${item.url || "product-details.html"}">${normalizeName(item.name)}</a>
+          <a class="global-minicart-title" href="${item.url || "shop.html"}">${normalizeName(item.name)}</a>
           <div class="global-minicart-price">${money(item.price * item.qty)}</div>
           <div class="global-minicart-actions">
             <div class="global-minicart-qty">
@@ -1126,7 +1126,7 @@ newsletterPopup();
         name: normalizeName(product.name || product.title),
         price: Number(product.price) || 0,
         img: product.img || "",
-        url: product.url || "product-details.html",
+        url: product.url || "shop.html",
         qty: Math.max(1, parseInt(product.qty, 10) || 1),
       });
     }
@@ -1144,12 +1144,58 @@ newsletterPopup();
     if (e.target.closest(".minicart__product--remove")) removeItem(id);
   });
 
+  const parsePrice = (raw) => {
+    const n = Number(String(raw || "").replace(/[^\d.,]/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const addCurrentProductToCart = (btn) => {
+    if (!window.MiniCart || typeof window.MiniCart.add !== "function") return;
+    const ctx = btn.closest(".product__details--info, .quickview__info");
+    if (!ctx) return;
+    const titleNode = ctx.querySelector(".product__details--info__title");
+    const priceNode = ctx.querySelector(".current__price");
+    const qtyNode = ctx.querySelector(".quantity__number");
+    const modalRoot = ctx.closest(".quickview__inner");
+    const imgNode =
+      (modalRoot && modalRoot.querySelector(".product__media--preview__items--img")) ||
+      document.querySelector(".product__details--media .product__media--preview__items--img");
+    const name = titleNode ? (titleNode.textContent || "").trim() : "Товар";
+    const price = parsePrice(priceNode ? priceNode.textContent : "0");
+    const qty = Math.max(1, parseInt(qtyNode ? qtyNode.value : "1", 10) || 1);
+    const img = imgNode ? imgNode.getAttribute("src") || "" : "";
+    const url = window.location.pathname.split("/").pop() || "shop.html";
+    window.MiniCart.add({ name, price, qty, img, url });
+  };
+
+
+  const addCardProductToCart = (btn) => {
+    if (!window.MiniCart || typeof window.MiniCart.add !== "function") return;
+    const card = btn.closest(".product__card");
+    if (!card) return;
+    const nameNode = card.querySelector(".product__card--title a, .product__card--title");
+    const priceNode = card.querySelector(".product__card--price .current__price, .current__price");
+    const imgNode = card.querySelector(".product__primary--img, .product__card--thumbnail__img, img");
+    const linkNode = card.querySelector(".product__card--title a, .product__card--thumbnail__link");
+    const name = nameNode ? (nameNode.textContent || "").trim() : "Товар";
+    const price = parsePrice(priceNode ? priceNode.textContent : "0");
+    const img = imgNode ? imgNode.getAttribute("src") || "" : "";
+    const url = linkNode ? linkNode.getAttribute("href") || "shop.html" : "shop.html";
+    window.MiniCart.add({ name, price, qty: 1, img, url });
+  };
   // Visual feedback for all "add to cart" triggers across pages.
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(
-      "a.product__card--btn, button.quickview__cart--btn, a.quickview__cart--btn, a.wishlist__cart--btn[data-action='add-to-cart']"
+      "a.product__card--btn, button.product__card--btn, button.quickview__cart--btn, a.quickview__cart--btn, a.wishlist__cart--btn[data-action='add-to-cart']"
     );
     if (!btn) return;
+    if (btn.matches("button.quickview__cart--btn, a.quickview__cart--btn")) {
+      e.preventDefault();
+      addCurrentProductToCart(btn);
+    } else if (btn.matches("a.product__card--btn, button.product__card--btn")) {
+      e.preventDefault();
+      addCardProductToCart(btn);
+    }
     animateCartButton(btn);
     showCartNotice("Товар добавлен в корзину");
   });
@@ -1184,6 +1230,265 @@ newsletterPopup();
     if (e.key === STORAGE_KEY || e.key === LEGACY_STORAGE_KEY) renderCart();
   });
   window.addEventListener("focus", renderCart);
+})();
+
+// Global compare actions (catalog cards + quickview) with mini panel
+(() => {
+  const COMPARE_KEY = "antenna_shop_compare_v1";
+  const COMPARE_LIMIT = 2;
+  const DEFAULT_NAME = "Товар";
+
+  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs = (sel, root = document) => root.querySelector(sel);
+  const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim();
+  const parsePrice = (text) => {
+    const digits = String(text || "").replace(/[^\d]/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  };
+
+  const load = () => {
+    try {
+      const raw = localStorage.getItem(COMPARE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const save = (list) => {
+    try {
+      localStorage.setItem(COMPARE_KEY, JSON.stringify(list || []));
+    } catch {}
+  };
+
+  const itemId = (item) =>
+    `${item.name || DEFAULT_NAME}|${Number(item.price) || 0}|${item.img || ""}`
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const ensureStyles = () => {
+    if (document.getElementById("global-compare-style")) return;
+    const st = document.createElement("style");
+    st.id = "global-compare-style";
+    st.textContent =
+      ".product__card--action__btn.is-in-compare,.quickview__variant--compare__icon.is-in-compare,.variant__compare--icon.is-in-compare{color:#0f8f3a;}" +
+      ".compare__notice{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#111;color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;line-height:1.3;box-shadow:0 8px 30px rgba(0,0,0,.25);white-space:pre-line;}" +
+      ".compare__mini{position:fixed;right:18px;bottom:18px;z-index:9998;background:#fff;border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.18);padding:12px 12px 10px;min-width:260px;max-width:320px;}" +
+      ".compare__mini--title{font-weight:700;font-size:14px;color:#111;margin:0 0 8px;}" +
+      ".compare__mini--list{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;}" +
+      ".compare__mini--item{display:flex;align-items:center;gap:8px;}" +
+      ".compare__mini--thumb{width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid #eee;background:#fafafa;}" +
+      ".compare__mini--name{font-size:13px;line-height:1.2;color:#111;flex:1;min-width:0;}" +
+      ".compare__mini--name span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
+      ".compare__mini--remove{border:0;background:#f3f3f3;color:#111;border-radius:8px;padding:6px 8px;font-size:12px;line-height:1;cursor:pointer;}" +
+      ".compare__mini--remove:hover{background:#e9e9e9;}" +
+      ".compare__mini--empty{font-size:13px;color:#777;}" +
+      ".compare__mini--actions{display:flex;gap:8px;margin-top:10px;}" +
+      ".compare__mini--link{flex:1;text-align:center;background:#111;color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;text-decoration:none;}" +
+      ".compare__mini--clear{flex:1;text-align:center;background:#f3f3f3;color:#111;border-radius:8px;padding:8px 10px;font-size:12px;border:0;cursor:pointer;}" +
+      "@media (max-width:767px){.compare__mini{left:12px;right:12px;max-width:none;}}";
+    document.head.appendChild(st);
+  };
+
+  const escapeHtml = (text) =>
+    String(text || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const ensureMiniPanel = () => {
+    if (document.getElementById("compare-mini")) return;
+    const panel = document.createElement("div");
+    panel.id = "compare-mini";
+    panel.className = "compare__mini";
+    panel.innerHTML =
+      '<div class="compare__mini--title">Сравнение</div>' +
+      '<ul class="compare__mini--list" id="compare-mini-list"></ul>' +
+      '<div class="compare__mini--actions">' +
+        '<a class="compare__mini--link" href="compare.html">Сравнить</a>' +
+        '<button class="compare__mini--clear" type="button" id="compare-mini-clear">Очистить</button>' +
+      '</div>';
+    document.body.appendChild(panel);
+
+    panel.addEventListener("click", (e) => {
+      const removeBtn = e.target.closest("[data-compare-remove]");
+      if (removeBtn) {
+        const id = removeBtn.getAttribute("data-compare-remove");
+        const list = load().filter((x) => x.id !== id);
+        save(list);
+        syncButtons();
+        renderMiniPanel();
+        showNotice("Товар удален из сравнения", list);
+        return;
+      }
+      if (e.target && e.target.id === "compare-mini-clear") {
+        save([]);
+        syncButtons();
+        renderMiniPanel();
+        showNotice("Сравнение очищено", []);
+      }
+    });
+  };
+
+  const renderMiniPanel = () => {
+    ensureStyles();
+    ensureMiniPanel();
+    const panel = document.getElementById("compare-mini");
+    const listEl = document.getElementById("compare-mini-list");
+    if (!panel || !listEl) return;
+
+    const list = load();
+    const isMobile = window.matchMedia && window.matchMedia("(max-width: 767px)").matches;
+
+    if (isMobile && !list.length) {
+      panel.style.display = "none";
+      return;
+    }
+    panel.style.display = "block";
+
+    if (!list.length) {
+      listEl.innerHTML = '<li class="compare__mini--empty">Пока ничего не добавлено</li>';
+      return;
+    }
+
+    listEl.innerHTML = list.map((item) => {
+      const img = item.img || "assets/img/product/product1.webp";
+      const name = item.name || DEFAULT_NAME;
+      return '' +
+        '<li class="compare__mini--item">' +
+          '<img class="compare__mini--thumb" src="' + escapeHtml(img) + '" alt="compare-item">' +
+          '<div class="compare__mini--name"><span>' + escapeHtml(name) + '</span></div>' +
+          '<button class="compare__mini--remove" type="button" data-compare-remove="' + escapeHtml(item.id) + '">Убрать</button>' +
+        '</li>';
+    }).join("");
+  };
+
+  const showNotice = (text, list) => {
+    ensureStyles();
+    const old = document.getElementById("compare-notice");
+    if (old) old.remove();
+
+    const names = (list || []).map((x) => (x && x.name ? x.name : DEFAULT_NAME));
+    const tail = names.length ? `Сейчас в сравнении: ${names.join(", ")}` : "Сравнение пустое";
+
+    const n = document.createElement("div");
+    n.id = "compare-notice";
+    n.className = "compare__notice";
+    n.textContent = `${text}
+${tail}`;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 2400);
+  };
+
+  const getItemFromButton = (btn) => {
+    const card = btn.closest(".product__card");
+    const scope =
+      card ||
+      btn.closest(".quickview__modal") ||
+      btn.closest(".product__details--section") ||
+      btn.closest(".single__product") ||
+      document;
+
+    const titleEl =
+      qs(".product__card--title a", scope) ||
+      qs(".product__card--title", scope) ||
+      qs(".quickview__info--title a", scope) ||
+      qs(".quickview__info--title", scope) ||
+      qs(".product__details--info__title", scope);
+    const priceEl =
+      qs(".product__card--price .current__price", scope) ||
+      qs(".current__price", scope);
+    const imgEl =
+      qs("img.product__primary--img", scope) ||
+      qs(".product__card--thumbnail img", scope) ||
+      qs(".product__media--preview img", scope);
+    const linkEl =
+      qs(".product__card--title a", scope) ||
+      qs(".product__card--thumbnail__link", scope) ||
+      qs(".quickview__info--title a", scope);
+
+    const name = normalize(titleEl ? titleEl.textContent : DEFAULT_NAME) || DEFAULT_NAME;
+    const price = parsePrice(priceEl ? priceEl.textContent : "");
+    const img = imgEl ? imgEl.getAttribute("src") || "" : "";
+    const category = card && card.dataset ? card.dataset.category || "" : "";
+    const fallbackUrl = window.location.pathname.split("/").pop() || "shop.html";
+    const link = linkEl ? linkEl.getAttribute("href") || fallbackUrl : fallbackUrl;
+
+    return {
+      id: itemId({ name, price, img }),
+      name,
+      price,
+      img,
+      category,
+      link,
+    };
+  };
+
+  const compareButtons = () =>
+    qsa(
+      "a.product__card--action__btn[href*='compare.html'], " +
+      "a.product__card--action__btn[title*='срав' i], " +
+      "a.product__card--action__btn[title*='compare' i], " +
+      "a.quickview__variant--compare__icon, " +
+      "a.variant__compare--icon"
+    );
+
+  const syncButtons = () => {
+    const ids = new Set(load().map((x) => x.id));
+    compareButtons().forEach((btn) => {
+      const item = getItemFromButton(btn);
+      btn.classList.toggle("is-in-compare", ids.has(item.id));
+    });
+    renderMiniPanel();
+  };
+
+  const handleCompareClick = (btn, e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+
+    const item = getItemFromButton(btn);
+    let list = load();
+    const idx = list.findIndex((x) => x.id === item.id);
+
+    if (idx !== -1) {
+      list.splice(idx, 1);
+      save(list);
+      syncButtons();
+      showNotice(`Удалено из сравнения: ${item.name}`, list);
+      return;
+    }
+
+    if (list.length >= COMPARE_LIMIT) {
+      showNotice("Можно сравнить только 2 товара", list);
+      return;
+    }
+
+    list.push(item);
+    save(list);
+    syncButtons();
+    showNotice(`Добавлено в сравнение: ${item.name}`, list);
+  };
+
+  ensureStyles();
+  syncButtons();
+
+  // Delegated handler: works for all current and future product cards.
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(
+      "a.product__card--action__btn[href*='compare.html'], a.quickview__variant--compare__icon, a.variant__compare--icon"
+    );
+    if (!btn) return;
+    handleCompareClick(btn, e);
+  }, true);
+  window.addEventListener("storage", (e) => {
+    if (e.key === COMPARE_KEY) syncButtons();
+  });
+  window.addEventListener("resize", renderMiniPanel);
+  window.addEventListener("focus", syncButtons);
 })();
 
 // Global wishlist actions (catalog cards + quickview) with animated notice
@@ -1265,31 +1570,44 @@ newsletterPopup();
       btn.closest(".single__product") ||
       document;
 
-    const titleEl =
-      qs(".product__card--title a", scope) ||
-      qs(".product__card--title", scope) ||
-      qs(".quickview__info--title a", scope) ||
-      qs(".quickview__info--title", scope) ||
-      qs(".product__details--info h2", scope) ||
-      qs(".product__details--title", scope);
-    const priceEl =
-      qs(".product__card--price .current__price", scope) ||
-      qs(".current__price", scope) ||
-      qs(".new__price", scope);
-    const imgEl =
-      qs("img.product__primary--img", scope) ||
-      qs(".product__card--thumbnail img", scope) ||
-      qs(".quickview__slider--items img", scope) ||
-      qs(".product__media--preview img", scope);
-    const linkEl =
-      qs(".product__card--title a", scope) ||
-      qs(".product__card--thumbnail__link", scope) ||
-      qs(".quickview__info--title a", scope);
+    const detailScope = btn.closest(".product__details--info, .quickview__info");
+
+    const titleEl = card
+      ? qs(".product__card--title a", card) || qs(".product__card--title", card)
+      : (detailScope &&
+          (qs(".product__details--info__title", detailScope) ||
+            qs(".quickview__info--title a", detailScope) ||
+            qs(".quickview__info--title", detailScope))) ||
+        qs(".product__details--info__title", scope) ||
+        qs(".product__details--title", scope) ||
+        qs(".product__card--title a", scope) ||
+        qs(".product__card--title", scope);
+
+    const priceEl = card
+      ? qs(".product__card--price .current__price", card) || qs(".current__price", card)
+      : (detailScope && qs(".current__price", detailScope)) ||
+        qs(".product__details--info .current__price", scope) ||
+        qs(".current__price", scope) ||
+        qs(".new__price", scope);
+
+    const imgEl = card
+      ? qs("img.product__primary--img", card) || qs(".product__card--thumbnail img", card)
+      : (detailScope &&
+          (qs(".product__media--preview__items--img", scope) ||
+            qs(".product__media--preview img", scope))) ||
+        qs(".quickview__slider--items img", scope) ||
+        qs("img.product__primary--img", scope) ||
+        qs(".product__card--thumbnail img", scope);
+
+    const linkEl = card
+      ? qs(".product__card--title a", card) || qs(".product__card--thumbnail__link", card)
+      : qs(".product__details--title a", scope) || qs(".quickview__info--title a", scope);
 
     const name = normalize(titleEl ? titleEl.textContent : DEFAULT_NAME) || DEFAULT_NAME;
     const price = parsePrice(priceEl ? priceEl.textContent : "");
     const img = imgEl ? imgEl.getAttribute("src") || "" : "";
-    const url = linkEl ? linkEl.getAttribute("href") || "product-details.html" : "product-details.html";
+    const fallbackUrl = window.location.pathname.split("/").pop() || "shop.html";
+    const url = linkEl ? linkEl.getAttribute("href") || fallbackUrl : fallbackUrl;
 
     return {
       id: wishlistItemId({ name, price, img }),
