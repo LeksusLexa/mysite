@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8">
+  <title>Оформление заказа</title>
+  <meta name="description" content="Интернет-магазин антенн и усилителей связи">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
+    
+  <!-- ======= All CSS Plugins here ======== -->
+  <link rel="stylesheet" href="assets/css/plugins/swiper-bundle.min.css">
+  <link rel="stylesheet" href="assets/css/plugins/glightbox.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800&family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+  <!-- Plugin css -->
+  <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
+  
+  <!-- Custom Style CSS -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .cabinet {
+      background: linear-gradient(180deg, #f7fafc 0%, #eef3f8 100%);
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+      padding: 28px;
+    }
+    .cabinet__welcome {
+      margin: 0 0 18px;
+      color: #263648;
+      font-size: 16px;
+    }
+    .cabinet__layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .cabinet__card {
+      background: #fff;
+      border: 1px solid #e5eaf1;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+    }
+    .cabinet__title {
+      margin: 0 0 14px;
+      font-size: 20px;
+      color: #162232;
+    }
+    .cabinet__menu {
+      display: grid;
+      gap: 10px;
+    }
+    .cabinet__menu a {
+      display: block;
+      border: 1px solid #e3e8ef;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #203246;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .cabinet__menu a.is-active {
+      border-color: #2f6fed;
+      background: #eef4ff;
+      color: #1d4fb8;
+    }
+    .cabinet__grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 14px;
+      align-items: start;
+    }
+    .cabinet__subtitle {
+      margin: 0 0 12px;
+      font-size: 18px;
+      color: #12243a;
+    }
+    .cabinet__form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .cabinet__field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .cabinet__field label {
+      font-size: 13px;
+      color: #5f7086;
+      font-weight: 500;
+    }
+    .cabinet__field input,
+    .cabinet__field select,
+    .cabinet__field textarea {
+      width: 100%;
+      border: 1px solid #d3ddea;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #12243a;
+      background: #fff;
+    }
+    .cabinet__field textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+    .cabinet__summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .cabinet__summary-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid #e7edf5;
+      font-size: 14px;
+      color: #25374b;
+      vertical-align: top;
+    }
+    .cabinet__summary-table tr:last-child td {
+      border-bottom: 0;
+    }
+    .cabinet__summary-table td:last-child {
+      text-align: right;
+      font-weight: 600;
+    }
+    .cabinet__checkout-products .cart__table--body__items td {
+      padding: 10px 0;
+      border-bottom: 1px solid #e7edf5;
+    }
+    .cabinet__actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .cabinet__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #213246;
+      padding: 9px 14px;
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .cabinet__btn.is-primary {
+      background: #2f6fed;
+      border-color: #2f6fed;
+      color: #fff;
+    }
+    .cabinet__check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #33465a;
+      font-size: 14px;
+    }
+    @media (max-width: 1199px) {
+      .cabinet__grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 991px) {
+      .cabinet__layout {
+        grid-template-columns: 1fr;
+      }
+      .cabinet__form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 575px) {
+      .cabinet {
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .cabinet__actions {
+        flex-direction: column;
+      }
+      .cabinet__btn {
+        width: 100%;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+       <!-- Start preloader -->
+    <div id="preloader">
+        <div id="ctn-preloader" class="ctn-preloader">
+            <div class="animation-preloader">
+                <div class="spinner"></div>
+                <div class="txt-loading">
+                    <span data-text-preloader="З" class="letters-loading">
+                        З
+                    </span>
+                    
+                    <span data-text-preloader="А" class="letters-loading">
+                        А
+                    </span>
+                    
+                    <span data-text-preloader="Г" class="letters-loading">
+                        Г
+                    </span>
+                    
+                    <span data-text-preloader="Р" class="letters-loading">
+                        Р
+                    </span>
+                    
+                    <span data-text-preloader="У" class="letters-loading">
+                        У
+                    </span>
+                    
+                    <span data-text-preloader="З" class="letters-loading">
+                        З
+                    </span>
+                    
+                    <span data-text-preloader="К" class="letters-loading">
+                        К
+                    </span>
+
+                     <span data-text-preloader="А" class="letters-loading">
+                        А
+                    </span>
+                </div>
+            </div>	
+
+            <div class="loader-section section-left"></div>
+            <div class="loader-section section-right"></div>
+        </div>
+    </div>
+    <!-- End preloader -->
+
+      <!-- Start header area -->
+    <header class="header__section">
+        <!-- Start Header topbar -->
+        <div class="header__topbar bg__primary color-primary-2">
+            <div class="container">
+                <div class="header__topbar--inner d-flex align-items-center justify-content-between">
+                    <ul class="header__contact--info d-flex align-items-center">
+                        <li class="header__contact--info__list text-white">
+                            <a href="obyectyandresheniya.html">Обьекты и решения</a>
+                        </li>
+                        <li class="header__contact--info__list text-white">
+                           
+                            <a href="partneram.html">Партнерам</a>
+                        </li>
+                         <li class="header__contact--info__list text-white">
+                            
+                            <a href="instalyatoram.html">Инсталляторам</a>
+                        </li>
+                         <li class="header__contact--info__list text-white">
+                           
+                            <a href="kompaniya.html">О компании</a>
+                        </li>
+                    </ul>
+                    <div class="language__currency d-none d-lg-block">
+                        <ul class="d-flex align-items-center">
+                            <li class="language__currency--list">
+                                <a class="language__switcher text-white" href="oplata.html">
+                                    <span>Оплата и доставка</span> 
+                                 
+                                </a>
+                            </li>
+                          
+                                <li class="language__currency--list">
+                                <a class="language__switcher text-white" href="contact.html">
+                                    <span>Контакты</span> 
+                                   
+                                </a>
+                            </li>
+
+                               <li class="language__currency--list">
+                                <a class="language__switcher text-white" href="gdekupit.html">
+                                    <span>Где купить</span> 
+                                   
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Start Header topbar -->
+
+        <!-- Start main header -->
+        <div class="main__header position__relative header__sticky">
+            <div class="container">
+                <div class="main__header--inner d-flex justify-content-between align-items-center">
+                    <div class="offcanvas__header--menu__open ">
+                        <a class="offcanvas__header--menu__open--btn" href="javascript:void(0)" data-offcanvas>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="ionicon offcanvas__header--menu__open--svg" viewBox="0 0 512 512"><path fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M80 160h352M80 256h352M80 352h352"/></svg>
+                            <span class="visually-hidden">Offcanvas Мужчиныu Open</span>
+                        </a>
+                    </div>
+                    <div class="main__logo">
+                        <h1 class="main__logo--title"><a class="main__logo--link" href="index.html"><img class="main__logo--img" src="assets/img/logo/nav-logo.png" alt="logo-img"></a></h1>
+                    </div>
+                    <div class="header__menu d-none d-lg-block">
+                        <nav class="header__menu--navigation">
+                            <ul class="d-flex">
+                               
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link " href="#">Каталог <span class="menu__plus--icon">+</span></a>
+                                    <ul class="header__sub--menu">
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Усилители</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Антенны</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Репитеры</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Комплектующие</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Аксессуары</a></li>                 
+                                    </ul>
+                                </li>
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link" href="gotovye-komplekty.html">Готовые комплекты </a>  
+                                </li>
+                               
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link " href="karta-pokrytiya.html">Карта покрытия <span class="menu__plus--icon"></span></a>
+                                 
+                                </li>
+
+                                    <li class="header__menu--items">
+                                    <a class="header__menu--link " href="faq.html">FAQ <span class="menu__plus--icon"></span></a>
+                                  
+                                </li>
+
+
+
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link" href="contact.html">Контакты </a>  
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="header__account">
+                        <ul class="d-flex">
+                            <li class="header__account--items  header__account--search__items d-md-none">
+                                <a class="header__account--btn search__open--btn" href="javascript:void(0)" data-offcanvas>
+                                    <svg class="header__search--button__svg" xmlns="http://www.w3.org/2000/svg" width="26.51" height="23.443" viewBox="0 0 512 512"><path d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M338.29 338.29L448 448"/></svg>  
+                                    <span class="visually-hidden">Поиск</span>
+                                </a>
+                            </li>
+                            <li class="header__account--items">
+                                <a class="header__account--btn" href="my-account.html">
+                                    <svg xmlns="http://www.w3.org/2000/svg"  width="26.51" height="23.443" viewBox="0 0 512 512"><path d="M344 144c-3.92 52.87-44 96-88 96s-84.15-43.12-88-96c-4-55 35-96 88-96s92 42 88 96z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M256 304c-87 0-175.3 48-191.64 138.6C62.39 453.52 68.57 464 80 464h352c11.44 0 17.62-10.48 15.65-21.4C431.3 352 343 304 256 304z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/></svg> 
+                                    <span class="visually-hidden">Мой аккаунт</span>
+                                </a>
+                            </li>
+                            <li class="header__account--items">
+                                <a class="header__account--btn minicart__open--btn" href="javascript:void(0)" data-offcanvas>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18.897" height="21.565" viewBox="0 0 18.897 21.565">
+                                        <path  d="M16.84,8.082V6.091a4.725,4.725,0,1,0-9.449,0v4.725a.675.675,0,0,0,1.35,0V9.432h5.4V8.082h-5.4V6.091a3.375,3.375,0,0,1,6.75,0v4.691a.675.675,0,1,0,1.35,0V9.433h3.374V21.581H4.017V9.432H6.041V8.082H2.667V21.641a1.289,1.289,0,0,0,1.289,1.29h16.32a1.289,1.289,0,0,0,1.289-1.29V8.082Z" transform="translate(-2.667 -1.366)" fill="currentColor"/>
+                                    </svg>
+                                  
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End main header -->
+
+        <!-- Start Offcanvas header menu -->
+        <div class="offcanvas-header" tabindex="-1">
+            <div class="offcanvas__inner">
+                <div class="offcanvas__logo">
+                    <a class="offcanvas__logo_link" href="index.html">
+                        <img src="assets/img/logo/nav-logo.png" alt="Rokon Logo">
+                    </a>
+                    <button class="offcanvas__close--btn" data-offcanvas>Закрыть</button>
+                </div>
+                <nav class="offcanvas__menu">
+                    <ul class="offcanvas__menu_ul">
+                           <li class="header__menu--items">
+                                    <a class="header__menu--link " href="#">Каталог <span class="menu__plus--icon">+</span></a>
+                                    <ul class="header__sub--menu">
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Усилители</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Антенны</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Репитеры</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Комплектующие</a></li>
+                                        <li class="header__sub--menu__items"><a href="shop.html" class="header__sub--menu__link">Аксессуары</a></li>                 
+                                    </ul>
+                                </li>
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link" href="gotovye-komplekty.html">Готовые комплекты </a>  
+                                </li>
+                               
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link " href="karta-pokrytiya.html">Карта покрытия <span class="menu__plus--icon"></span></a>
+                                 
+                                </li>
+
+                                    <li class="header__menu--items">
+                                    <a class="header__menu--link " href="faq.html">FAQ <span class="menu__plus--icon"></span></a>
+                                  
+                                </li>
+
+                                <li class="header__menu--items">
+                                    <a class="header__menu--link" href="contact.html">Контакты </a>  
+                                </li>
+                    </ul>
+                    <div class="offcanvas__account--items">
+                        <a class="offcanvas__account--items__btn d-flex align-items-center" href="login.html">
+                        <span class="offcanvas__account--items__icon"> 
+                            <svg xmlns="http://www.w3.org/2000/svg"  width="20.51" height="19.443" viewBox="0 0 512 512"><path d="M344 144c-3.92 52.87-44 96-88 96s-84.15-43.12-88-96c-4-55 35-96 88-96s92 42 88 96z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M256 304c-87 0-175.3 48-191.64 138.6C62.39 453.52 68.57 464 80 464h352c11.44 0 17.62-10.48 15.65-21.4C431.3 352 343 304 256 304z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/></svg> 
+                            </span>
+                        <span class="offcanvas__account--items__label">Логин / Регистрация</span>
+                        </a>
+                    </div>
+                   
+                </nav>
+            </div>
+        </div>
+        <!-- End Offcanvas header menu -->
+
+        <!-- Start Offcanvas stikcy toolbar -->
+        <div class="offcanvas__stikcy--toolbar" tabindex="-1">
+            <ul class="d-flex justify-content-between">
+                <li class="offcanvas__stikcy--toolbar__list">
+                    <a class="offcanvas__stikcy--toolbar__btn" href="index.html">
+                    <span class="offcanvas__stikcy--toolbar__icon"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" width="21.51" height="21.443" viewBox="0 0 22 17"><path fill="currentColor" d="M20.9141 7.93359c.1406.11719.2109.26953.2109.45703 0 .14063-.0469.25782-.1406.35157l-.3516.42187c-.1172.14063-.2578.21094-.4219.21094-.1406 0-.2578-.04688-.3515-.14062l-.9844-.77344V15c0 .3047-.1172.5625-.3516.7734-.2109.2344-.4687.3516-.7734.3516h-4.5c-.3047 0-.5742-.1172-.8086-.3516-.2109-.2109-.3164-.4687-.3164-.7734v-3.6562h-2.25V15c0 .3047-.11719.5625-.35156.7734-.21094.2344-.46875.3516-.77344.3516h-4.5c-.30469 0-.57422-.1172-.80859-.3516-.21094-.2109-.31641-.4687-.31641-.7734V8.46094l-.94922.77344c-.11719.09374-.24609.14062-.38672.14062-.16406 0-.30468-.07031-.42187-.21094l-.35157-.42187C.921875 8.625.875 8.50781.875 8.39062c0-.1875.070312-.33984.21094-.45703L9.73438.832031C10.1094.527344 10.5312.375 11 .375s.8906.152344 1.2656.457031l8.6485 7.101559zm-3.7266 6.50391V7.05469L11 1.99219l-6.1875 5.0625v7.38281h3.375v-3.6563c0-.3046.10547-.5624.31641-.7734.23437-.23436.5039-.35155.80859-.35155h3.375c.3047 0 .5625.11719.7734.35155.2344.211.3516.4688.3516.7734v3.6563h3.375z"></path></svg>
+                        </span>
+                    <span class="offcanvas__stikcy--toolbar__label">Главная</span>
+                    </a>
+                </li>
+                <li class="offcanvas__stikcy--toolbar__list">
+                    <a class="offcanvas__stikcy--toolbar__btn" href="shop.html">
+                    <span class="offcanvas__stikcy--toolbar__icon"> 
+                        <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" width="18.51" height="17.443" viewBox="0 0 448 512"><path d="M416 32H32A32 32 0 0 0 0 64v384a32 32 0 0 0 32 32h384a32 32 0 0 0 32-32V64a32 32 0 0 0-32-32zm-16 48v152H248V80zm-200 0v152H48V80zM48 432V280h152v152zm200 0V280h152v152z"></path></svg>
+                        </span>
+                    <span class="offcanvas__stikcy--toolbar__label">Каталог</span>
+                    </a>
+                </li>
+                <li class="offcanvas__stikcy--toolbar__list ">
+                    <a class="offcanvas__stikcy--toolbar__btn search__open--btn" href="javascript:void(0)" data-offcanvas>
+                        <span class="offcanvas__stikcy--toolbar__icon"> 
+                            <svg xmlns="http://www.w3.org/2000/svg"  width="22.51" height="20.443" viewBox="0 0 512 512"><path d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M338.29 338.29L448 448"/></svg>   
+                        </span>
+                    <span class="offcanvas__stikcy--toolbar__label">Поиск</span>
+                    </a>
+                </li>
+                <li class="offcanvas__stikcy--toolbar__list">
+                    <a class="offcanvas__stikcy--toolbar__btn minicart__open--btn" href="javascript:void(0)" data-offcanvas>
+                        <span class="offcanvas__stikcy--toolbar__icon"> 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18.51" height="15.443" viewBox="0 0 18.51 15.443">
+                            <path  d="M79.963,138.379l-13.358,0-.56-1.927a.871.871,0,0,0-.6-.592l-1.961-.529a.91.91,0,0,0-.226-.03.864.864,0,0,0-.226,1.7l1.491.4,3.026,10.919a1.277,1.277,0,1,0,1.844,1.144.358.358,0,0,0,0-.049h6.163c0,.017,0,.034,0,.049a1.277,1.277,0,1,0,1.434-1.267c-1.531-.247-7.783-.55-7.783-.55l-.205-.8h7.8a.9.9,0,0,0,.863-.651l1.688-5.943h.62a.936.936,0,1,0,0-1.872Zm-9.934,6.474H68.568c-.04,0-.1.008-.125-.085-.034-.118-.082-.283-.082-.283l-1.146-4.037a.061.061,0,0,1,.011-.057.064.064,0,0,1,.053-.025h1.777a.064.064,0,0,1,.063.051l.969,4.34,0,.013a.058.058,0,0,1,0,.019A.063.063,0,0,1,70.03,144.853Zm3.731-4.41-.789,4.359a.066.066,0,0,1-.063.051h-1.1a.064.064,0,0,1-.063-.051l-.789-4.357a.064.064,0,0,1,.013-.055.07.07,0,0,1,.051-.025H73.7a.06.06,0,0,1,.051.025A.064.064,0,0,1,73.76,140.443Zm3.737,0L76.26,144.8a.068.068,0,0,1-.063.049H74.684a.063.063,0,0,1-.051-.025.064.064,0,0,1-.013-.055l.973-4.357a.066.066,0,0,1,.063-.051h1.777a.071.071,0,0,1,.053.025A.076.076,0,0,1,77.5,140.448Z" transform="translate(-62.393 -135.3)" fill="currentColor"/>
+                            </svg> 
+                        </span>
+                        <span class="offcanvas__stikcy--toolbar__label">Корзина</span>
+                      
+                    </a>
+                </li>
+                <li class="offcanvas__stikcy--toolbar__list">
+                    <a class="offcanvas__stikcy--toolbar__btn" href="wishlist.html">
+                        <span class="offcanvas__stikcy--toolbar__icon"> 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18.541" height="15.557" viewBox="0 0 18.541 15.557">
+                            <path  d="M71.775,135.51a5.153,5.153,0,0,1,1.267-1.524,4.986,4.986,0,0,1,6.584.358,4.728,4.728,0,0,1,1.174,4.914,10.458,10.458,0,0,1-2.132,3.808,22.591,22.591,0,0,1-5.4,4.558c-.445.282-.9.549-1.356.812a.306.306,0,0,1-.254.013,25.491,25.491,0,0,1-6.279-4.8,11.648,11.648,0,0,1-2.52-4.009,4.957,4.957,0,0,1,.028-3.787,4.629,4.629,0,0,1,3.744-2.863,4.782,4.782,0,0,1,5.086,2.447c.013.019.025.034.057.076Z" transform="translate(-62.498 -132.915)" fill="currentColor"/>
+                            </svg> 
+                        </span>
+                        <span class="offcanvas__stikcy--toolbar__label">Избранное</span>
+                        
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- End Offcanvas stikcy toolbar -->
+
+        <!-- Start offCanvas minicart -->
+        <div class="offCanvas__minicart" tabindex="-1">
+            <div class="minicart__header ">
+                <div class="minicart__header--top d-flex justify-content-between align-items-center">
+                    <h3 class="minicart__title"> Корзина</h3>
+                    <button class="minicart__close--btn" aria-label="minicart close btn" data-offcanvas>
+                        <svg class="minicart__close--icon" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 512 512"><path fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>
+                    </button>
+                </div>
+                <p class="minicart__header--desc">Ваши товары уже в корзине</p>
+            </div>
+            <div class="minicart__amount">
+               
+                <div class="minicart__amount_list d-flex justify-content-between">
+                    <span>Сумма:</span>
+                    <span><b>₽0.00</b></span>
+                </div>
+            </div>
+            <div class="minicart__conditions text-center">
+                <input class="minicart__conditions--input" id="accept" type="checkbox">
+               <label class="minicart__conditions--label" for="accept">
+  Я согласен с <a class="minicart__conditions--link" href="privacy-policy.html">Политикой конфиденциальности</a>
+</label>
+
+            </div>
+            <div class="minicart__button d-flex justify-content-center">
+              
+                <a class="primary__btn minicart__button--link" href="checkout.html">Оформить заказ</a>
+            </div>
+        </div>
+        <!-- End offCanvas minicart -->
+
+        
+        <!-- Start serch box area -->
+        <div class="predictive__search--box " tabindex="-1">
+            <div class="predictive__search--box__inner">
+                <h2 class="predictive__search--title">Поиск товаров</h2>
+                <form class="predictive__search--form" action="#">
+                    <label>
+                        <input class="predictive__search--input" placeholder="Название товара" type="text">
+                    </label>
+                    <button class="predictive__search--button" aria-label="Кнопка поиска"><svg class="header__search--button__svg" xmlns="http://www.w3.org/2000/svg" width="30.51" height="25.443" viewBox="0 0 512 512"><path d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="32" d="M338.29 338.29L448 448"/></svg>  </button>
+                </form>
+            </div>
+            <button class="predictive__search--close__btn" aria-label="search close btn" data-offcanvas>
+                <svg class="predictive__search--close__icon" xmlns="http://www.w3.org/2000/svg" width="40.51" height="30.443"  viewBox="0 0 512 512"><path fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 368L144 144M368 144L144 368"/></svg>
+            </button>
+        </div>
+        <!-- End serch box area -->
+    </header>
+        <!-- End header area -->
+    
+    <main class="main__content_wrapper">
+
+        <!-- Start breadcrumb section -->
+        <section class="breadcrumb__section breadcrumb__bg">
+            <div class="container">
+                <div class="row row-cols-1">
+                    <div class="col">
+                        <div class="breadcrumb__content">
+                            <h1 class="breadcrumb__content--title mb-10">Оформление заказа</h1>
+                            <ul class="breadcrumb__content--menu d-flex">
+                                <li class="breadcrumb__content--menu__items"><a href="index.html">Главная</a></li>
+                                <li class="breadcrumb__content--menu__items"><span class="text__secondary">Оформление заказа</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- End breadcrumb section -->
+
+    <!-- Start checkout page area -->
+<section class="my__account--section section--padding">
+    <div class="container">
+        <div class="cabinet">
+            <p class="cabinet__welcome">Проверьте товары, адрес и оплату перед подтверждением заказа.</p>
+            <div class="cabinet__layout">
+                <aside class="cabinet__card">
+                    <h2 class="cabinet__title">Личный кабинет</h2>
+                    <nav class="cabinet__menu">
+                        <a href="my-account.html">Панель управления</a>
+                        <a href="my-account-2.html">Адреса доставки</a>
+                        <a href="my-account-favorites.html">Избранное</a>
+                        <a href="my-account-settings.html">Настройки профиля</a>
+                        <a class="is-active" href="checkout.html">Мои оплаты</a>
+                        <a href="login.html">Выйти</a>
+                    </nav>
+                </aside>
+                <div class="cabinet__grid">
+                    <form class="cabinet__card" action="#">
+                        <h3 class="cabinet__subtitle">Контактная информация</h3>
+                        <div class="cabinet__field checkout__email--phone">
+                            <label for="checkout-contact">Email или номер мобильного телефона</label>
+                            <input id="checkout-contact" class="checkout__input--field" placeholder="Email или номер мобильного телефона" type="text">
+                        </div>
+                        <div class="cabinet__field">
+                            <label class="cabinet__check"><input id="check1" type="checkbox"> Присылать мне новости и специальные предложения</label>
+                        </div>
+
+                        <h3 class="cabinet__subtitle">Платежные данные</h3>
+                        <div class="cabinet__form-grid">
+                            <div class="cabinet__field">
+                                <label for="input1">Имя</label>
+                                <input id="input1" class="checkout__input--field" placeholder="Имя" type="text">
+                            </div>
+                            <div class="cabinet__field">
+                                <label for="input2">Фамилия</label>
+                                <input id="input2" class="checkout__input--field" placeholder="Фамилия" type="text">
+                            </div>
+                        </div>
+                        <div class="cabinet__field">
+                            <label for="input3">Название компании</label>
+                            <input id="input3" class="checkout__input--field" placeholder="Компания (необязательно)" type="text">
+                        </div>
+                        <div class="cabinet__field">
+                            <label for="input4">Адрес</label>
+                            <input id="input4" class="checkout__input--field" placeholder="Адрес" type="text">
+                        </div>
+                        <div class="cabinet__field">
+                            <label for="input-flat">Квартира, офис и т.д.</label>
+                            <input id="input-flat" class="checkout__input--field" placeholder="Квартира, офис и т.д. (необязательно)" type="text">
+                        </div>
+                        <div class="cabinet__form-grid">
+                            <div class="cabinet__field">
+                                <label for="input5">Город</label>
+                                <input id="input5" class="checkout__input--field" placeholder="Город" type="text">
+                            </div>
+                            <div class="cabinet__field">
+                                <label for="country">Страна/регион</label>
+                                <select id="country" class="checkout__input--select__field">
+                                    <option value="ru">Россия</option>
+                                    <option value="kz">Казахстан</option>
+                                    <option value="by">Беларусь</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="cabinet__field">
+                            <label for="input6">Почтовый индекс</label>
+                            <input id="input6" class="checkout__input--field" placeholder="Почтовый индекс" type="text">
+                        </div>
+                        <div class="cabinet__field">
+                            <label for="order">Комментарий к заказу</label>
+                            <textarea id="order" class="checkout__notes--textarea__field" placeholder="Примечания к заказу, например особые пожелания по доставке." spellcheck="false"></textarea>
+                        </div>
+                        <div class="cabinet__actions">
+                            <button class="cabinet__btn is-primary" type="submit">Оформить заказ</button>
+                            <a class="cabinet__btn" href="shop.html">Вернуться в каталог</a>
+                        </div>
+                    </form>
+
+                    <aside class="cabinet__card">
+                        <h3 class="cabinet__subtitle">Сводка заказа</h3>
+                        <div class="cabinet__checkout-products">
+                            <table class="cart__table--inner">
+                                <tbody class="cart__table--body" id="checkout-cart-body">
+                                    <!-- items injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <table class="cabinet__summary-table">
+                            <tbody>
+                                <tr>
+                                    <td>Промежуточный итог</td>
+                                    <td><span id="checkout-subtotal">₽0</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Доставка</td>
+                                    <td>Рассчитывается</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td><strong>Итого</strong></td>
+                                    <td><strong><span id="checkout-total">₽0</span></strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="cabinet__actions">
+                            <button class="cabinet__btn is-primary" type="button">Банковская карта</button>
+                            <button class="cabinet__btn" type="button">Банковский перевод</button>
+                            <button class="cabinet__btn" type="button">PayPal</button>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End checkout page area -->
+
+
+        
+    </main>
+
+  <!-- Start footer section -->
+    <footer class="footer__section footer__bg">
+        <div class="container">
+            <div class="main__footer section--padding">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer__widget">
+                            <h2 class="footer__widget--title d-none d-md-block">Усилитель связи <button class="footer__widget--button" aria-label="Кнопка раздела футера"></button>
+                                <svg class="footer__widget--title__arrowdown--icon" xmlns="http://www.w3.org/2000/svg" width="12.355" height="8.394" viewBox="0 0 10.355 6.394">
+                                    <path  d="M15.138,8.59l-3.961,3.952L7.217,8.59,6,9.807l5.178,5.178,5.178-5.178Z" transform="translate(-6 -8.59)" fill="currentColor"></path>
+                                </svg>
+                            </h2>
+                            <div class="footer__widget--inner">
+                                <a class="footer__logo" href="index.html"><img class="footer__logo--img display-block" src="assets/img/logo/nav-logo.png" alt="footer-logo"></a>
+                                <p class="footer__widget--desc">Стабилизация работы сотового сигнала и интернета!</p>
+                              
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer__widget">
+                            <h2 class="footer__widget--title ">Информация про нас <button class="footer__widget--button" aria-label="Кнопка раздела футера"></button>
+                                <svg class="footer__widget--title__arrowdown--icon" xmlns="http://www.w3.org/2000/svg" width="12.355" height="8.394" viewBox="0 0 10.355 6.394">
+                                    <path  d="M15.138,8.59l-3.961,3.952L7.217,8.59,6,9.807l5.178,5.178,5.178-5.178Z" transform="translate(-6 -8.59)" fill="currentColor"></path>
+                                </svg>
+                            </h2>
+                            <ul class="footer__widget--menu footer__widget--inner">
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="partneram.html">О нас</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="wishlist.html">Избранное</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="contact.html">Связаться с нами</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="privacy-policy.html">Юридическая информация</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="faq.html">Как заказать?</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer__widget">
+                            <h2 class="footer__widget--title ">Меню сайта <button class="footer__widget--button" aria-label="Кнопка раздела футера"></button>
+                                <svg class="footer__widget--title__arrowdown--icon" xmlns="http://www.w3.org/2000/svg" width="12.355" height="8.394" viewBox="0 0 10.355 6.394">
+                                    <path  d="M15.138,8.59l-3.961,3.952L7.217,8.59,6,9.807l5.178,5.178,5.178-5.178Z" transform="translate(-6 -8.59)" fill="currentColor"></path>
+                                </svg>
+                            </h2>
+                            <ul class="footer__widget--menu footer__widget--inner">
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="my-account.html">Кабинет</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="shop.html">Каталог</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="faq.html">FAQ</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="karta-pokrytiya.html">Карта покрытия</a></li>
+                                <li class="footer__widget--menu__list"><a class="footer__widget--menu__text" href="gotovye-komplekty.html">Готовые комплекты </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="footer__widget">
+                            <h2 class="footer__widget--title ">Поиск товара <button class="footer__widget--button" aria-label="Кнопка раздела футера"></button>
+                                <svg class="footer__widget--title__arrowdown--icon" xmlns="http://www.w3.org/2000/svg" width="12.355" height="8.394" viewBox="0 0 10.355 6.394">
+                                    <path  d="M15.138,8.59l-3.961,3.952L7.217,8.59,6,9.807l5.178,5.178,5.178-5.178Z" transform="translate(-6 -8.59)" fill="currentColor"></path>
+                                </svg>
+                            </h2>
+                            <div class="footer__newsletter footer__widget--inner">
+                                <p class="footer__newsletter--desc">Введите название товара</p>
+                                <form class="newsletter__subscribe--form__style position__relative" action="#">
+                                    <label>
+                                        <input class="footer__newsletter--input newsletter__subscribe--input" placeholder="Введите название товара" type="text">
+                                    </label>
+                                    <button class="footer__newsletter--button newsletter__subscribe--button primary__btn" type="submit">Поиск
+                                        <svg class="newsletter__subscribe--button__icon" xmlns="http://www.w3.org/2000/svg" width="9.159" height="7.85" viewBox="0 0 9.159 7.85">
+                                            <path  data-name="Icon material-send" d="M3,12.35l9.154-3.925L3,4.5,3,7.553l6.542.872L3,9.3Z" transform="translate(-3 -4.5)" fill="currentColor"/>
+                                        </svg>
+                                    </button>
+                                </form> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer__bottom d-flex justify-content-between align-items-center">
+                <p class="copyright__content  m-0">Сделано © 2026 <a class="copyright__content--link" href="index.html">Усилители связи</a>. Все права защищены.</p>
+                <p class="footer__bottom--desc"><a href="privacy-policy.html">Юридическая информация</a> <a href="privacy-policy.html">Политика приватности</a></p>
+            </div>
+        </div>
+    </footer>
+    <!-- End footer section -->
+
+    <!-- Scroll top bar -->
+    <button id="scroll__top"><svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 244l144-144 144 144M256 120v292"/></svg></button>
+
+    
+  <!-- All Script JS Plugins here  -->
+  <script src="assets/js/vendor/popper.js" defer="defer"></script>
+  <script src="assets/js/vendor/bootstrap.min.js" defer="defer"></script>
+
+  <script src="assets/js/plugins/swiper-bundle.min.js" defer="defer"></script>
+  <script src="assets/js/plugins/glightbox.min.js" defer="defer"></script>
+
+  <!-- Customscript js -->
+  <script src="assets/js/script.js" defer="defer"></script>
+
+
+  
+
+<script>
+(function(){
+  var CART_KEY = 'antenna_shop_cart_v1';
+  var ADDRESS_KEY = 'cabinetAddresses';
+
+  function qs(sel, root){ return (root||document).querySelector(sel); }
+
+  function loadCart(){
+    try{
+      var raw = localStorage.getItem(CART_KEY);
+      var data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    }catch(e){ return []; }
+  }
+
+  function moneyRUB(value){
+    var n = Number(value || 0);
+    try{
+      // Без копеек, как в каталоге
+      return new Intl.NumberFormat('ru-RU', { style:'currency', currency:'RUB', maximumFractionDigits:0 }).format(n);
+    }catch(e){
+      return '₽' + Math.round(n).toString();
+    }
+  }
+
+  function cartTotal(cart){
+    return (cart || []).reduce(function(sum, x){
+      var p = isFinite(x.price) ? x.price : 0;
+      var q = isFinite(x.qty) ? x.qty : 1;
+      return sum + p * q;
+    }, 0);
+  }
+
+  function renderCheckoutCart(){
+    var body = qs('#checkout-cart-body');
+    if(!body) return;
+
+    var cart = loadCart();
+    body.innerHTML = '';
+
+    if(!cart.length){
+      body.innerHTML =
+        '<tr class="cart__table--body__items">' +
+          '<td class="cart__table--body__list" colspan="2" style="padding:18px 10px;">' +
+            '<div style="text-align:center;opacity:.75;">Корзина пуста</div>' +
+          '</td>' +
+        '</tr>';
+    }else{
+      cart.forEach(function(x){
+        var tr = document.createElement('tr');
+        tr.className = 'cart__table--body__items';
+        tr.setAttribute('data-id', x.id || '');
+
+        var img = x.img
+          ? ('<img class="display-block border-radius-5" src="' + x.img + '" alt="cart-product">')
+          : ('<div style="width:70px;height:70px;background:#f2f2f2;border-radius:6px;"></div>');
+
+        tr.innerHTML =
+          '<td class="cart__table--body__list">' +
+            '<div class="product__image two d-flex align-items-center">' +
+              '<div class="product__thumbnail border-radius-5" style="overflow:hidden;">' +
+                '<a class="display-block" href="shop.html">' + img + '</a>' +
+                '<span class="product__thumbnail--quantity">' + (x.qty || 1) + '</span>' +
+              '</div>' +
+              '<div class="product__description">' +
+                '<h4 class="product__description--name"><a href="shop.html">' + (x.name || '') + '</a></h4>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+          '<td class="cart__table--body__list">' +
+            '<span class="cart__price">' + moneyRUB((x.price||0) * (x.qty||1)) + '</span>' +
+          '</td>';
+
+        body.appendChild(tr);
+      });
+    }
+
+    var subtotalEl = qs('#checkout-subtotal');
+    var totalEl = qs('#checkout-total');
+    var total = cartTotal(cart);
+    if(subtotalEl) subtotalEl.textContent = moneyRUB(total);
+    if(totalEl) totalEl.textContent = moneyRUB(total);
+  }
+
+  function parseDefaultAddress(){
+    try{
+      var raw = localStorage.getItem(ADDRESS_KEY);
+      if(!raw) return null;
+      var list = JSON.parse(raw);
+      if(!Array.isArray(list) || !list.length) return null;
+      var selected = list.find(function(x){ return x && x.isDefault; }) || list[0];
+      if(!selected || !selected.details) return null;
+      return selected;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function setIfEmpty(selector, value){
+    var field = qs(selector);
+    if(!field || !value) return;
+    if(String(field.value || '').trim()) return;
+    field.value = value;
+  }
+
+  function fillCheckoutFromAddress(){
+    var address = parseDefaultAddress();
+    if(!address) return;
+
+    var fullName = String(address.name || '').trim();
+    var nameParts = fullName.split(/\s+/).filter(Boolean);
+    var firstName = nameParts[0] || '';
+    var lastName = nameParts.slice(1).join(' ');
+
+    // details format: "Получатель, телефон\nг. Город, улица..."
+    var detailsLines = String(address.details || '')
+      .split('\n')
+      .map(function(s){ return s.trim(); })
+      .filter(Boolean);
+    var firstLine = detailsLines[0] || '';
+    var secondLine = detailsLines[1] || '';
+
+    var phone = '';
+    var phoneMatch = firstLine.match(/(\+?\d[\d\s\-\(\)]{7,}\d)/);
+    if(phoneMatch) phone = phoneMatch[1].trim();
+
+    var city = '';
+    var cityMatch = secondLine.match(/г\.\s*([^,]+)/i);
+    if(cityMatch) city = cityMatch[1].trim();
+
+    setIfEmpty('#input1', firstName);
+    setIfEmpty('#input2', lastName);
+    setIfEmpty('#input4', secondLine || firstLine);
+    setIfEmpty('#input5', city);
+    setIfEmpty('.checkout__email--phone input', phone);
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    renderCheckoutCart();
+    fillCheckoutFromAddress();
+  });
+})();
+</script>
+
+</body>
+</html>
