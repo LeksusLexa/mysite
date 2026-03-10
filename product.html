@@ -118,58 +118,6 @@
 
     <!-- Start header area -->
     <header class="header__section">
-        <!-- Start Header topbar -->
-        <div class="header__topbar bg__primary color-primary-2">
-            <div class="container">
-                <div class="header__topbar--inner d-flex align-items-center justify-content-between">
-                    <ul class="header__contact--info d-flex align-items-center">
-                        <li class="header__contact--info__list text-white">
-                            <a href="obyectyandresheniya.html">Обьекты и решения</a>
-                        </li>
-                        <li class="header__contact--info__list text-white">
-                           
-                            <a href="partneram.html">Партнерам</a>
-                        </li>
-                         <li class="header__contact--info__list text-white">
-                            
-                            <a href="instalyatoram.html">Инсталляторам</a>
-                        </li>
-                         <li class="header__contact--info__list text-white">
-                           
-                            <a href="kompaniya.html">О компании</a>
-                        </li>
-                    </ul>
-                    <div class="language__currency d-none d-lg-block">
-                        <ul class="d-flex align-items-center">
-                            <li class="language__currency--list">
-                                <a class="language__switcher text-white" href="oplata.html">
-                                    <span>Оплата и доставка</span> 
-                                 
-                                </a>
-                            </li>
-                          
-                                <li class="language__currency--list">
-                                <a class="language__switcher text-white" href="contact.html">
-                                    <span>Контакты</span> 
-                                   
-                                </a>
-                            </li>
-
-                               <li class="language__currency--list">
-                                <a class="language__switcher text-white" href="gdekupit.html">
-                                    <span>Где купить</span> 
-                                   
-                                </a>
-                            </li>
-
-
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Start Header topbar -->
-
         <!-- Start main header -->
         <div class="main__header position__relative header__sticky">
             <div class="container">
@@ -450,15 +398,15 @@
                 <label><input id="product-qty" type="number" class="quantity__number quickview__value--number" value="1" min="1" data-counter></label>
                 <button type="button" class="quantity__value quickview__value--quantity increase" aria-label="Увеличить">+</button>
               </div>
-              <button class="quickview__cart--btn primary__btn" type="button">В корзину</button>
+              <button id="product-add-to-cart" class="dynamic-product__cart-btn primary__btn" type="button">В корзину</button>
             </div>
             <div class="dynamic-product__actions">
               <div class="dynamic-product__side-actions">
-                <a class="variant__wishlist--icon" href="wishlist.html" title="В избранное">
+                <a id="product-add-to-wishlist" class="variant__wishlist--icon" href="wishlist.html" title="В избранное">
                   <svg class="quickview__variant--wishlist__svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"></path></svg>
                   В избранное
                 </a>
-                <a class="variant__compare--icon" href="compare.html" title="Сравнить">
+                <a id="product-add-to-compare" class="variant__compare--icon" href="compare.html" title="Сравнить">
                   <svg class="product__card--action__btn--svg" xmlns="http://www.w3.org/2000/svg" width="19.51" height="18.443" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"></path></svg>
                   В сравнение
                 </a>
@@ -485,10 +433,7 @@
           </div>
         </div>
       </div>
-      <div class="dynamic-product__related">
-        <h2 class="dynamic-product__related-title">Похожие товары</h2>
-        <div id="related-products" class="row row-cols-xl-3 row-cols-lg-3 row-cols-md-2 row-cols-1 mb--n30"></div>
-      </div>
+     
     </div>
   </section>
 </main>
