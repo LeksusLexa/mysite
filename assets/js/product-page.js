@@ -555,6 +555,48 @@
       addToCartManual(product, qty, mainImage ? (mainImage.getAttribute('src') || '') : '', btn);
     });
   }
+  function bindProductQuantityControls() {
+    var qtyInput = qs('#product-qty');
+    if (!qtyInput || qtyInput.dataset.boundProductQty === '1') return;
+    qtyInput.dataset.boundProductQty = '1';
+
+    var box = qtyInput.closest('.quantity__box');
+    if (!box) return;
+
+    var increaseBtn = qs('.increase', box);
+    var decreaseBtn = qs('.decrease', box);
+
+    function normalizeQty(nextValue) {
+      var value = parseInt(nextValue, 10);
+      value = isNaN(value) ? 1 : value;
+      value = Math.max(1, value);
+      qtyInput.value = String(value);
+    }
+
+    if (increaseBtn) {
+      increaseBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        normalizeQty((parseInt(qtyInput.value, 10) || 1) + 1);
+      });
+    }
+
+    if (decreaseBtn) {
+      decreaseBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        normalizeQty((parseInt(qtyInput.value, 10) || 1) - 1);
+      });
+    }
+
+    qtyInput.addEventListener('input', function () {
+      normalizeQty(qtyInput.value);
+    });
+
+    qtyInput.addEventListener('blur', function () {
+      normalizeQty(qtyInput.value);
+    });
+  }
 
   function showState(message, isError) {
     var state = qs('#product-page-state');
@@ -603,6 +645,7 @@
     renderSpecs(splitSpecs(product));
     renderRelated(products, product);
     bindMiniCartOpeners();
+    bindProductQuantityControls();
     bindCartButton(product);
     bindWishlistButton(product);
     bindCompareButton(product);
