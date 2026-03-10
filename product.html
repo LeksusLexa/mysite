@@ -52,6 +52,7 @@
     .dynamic-product__panel { padding: 30px; }
     .dynamic-product__badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: rgba(214,31,44,.08); color: #d61f2c; font-weight: 600; margin-bottom: 14px; }
     .dynamic-product__title { font-size: 34px; line-height: 1.1; margin-bottom: 14px; }
+    .dynamic-product__title a { color: inherit; }
     .dynamic-product__meta { display: grid; gap: 10px; padding: 18px 0; margin: 18px 0; border-top: 1px solid #e6edf5; border-bottom: 1px solid #e6edf5; }
     .dynamic-product__meta-item { display: flex; justify-content: space-between; gap: 16px; font-size: 15px; }
     .dynamic-product__meta-label { color: #64748b; }
@@ -430,7 +431,7 @@
           </div>
           <div class="dynamic-product__panel product__details--info product__details--section">
             <div id="product-badge" class="dynamic-product__badge">В наличии</div>
-            <h1 id="product-title" class="dynamic-product__title product__details--info__title">Товар</h1>
+            <h1 id="product-title" class="dynamic-product__title product__details--info__title"><a id="product-title-link" href="product.html">Товар</a></h1>
             <div class="product__details--info__price mb-10">
               <span id="product-price" class="current__price">0 ₽</span>
               <span class="price__divided"></span>

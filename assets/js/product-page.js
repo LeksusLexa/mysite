@@ -20,6 +20,9 @@
     if (product && product.sku) return 'product.html?sku=' + encodeURIComponent(product.sku);
     return 'shop.html';
   }
+  function currentProductUrl(product) {
+    return 'product.html?sku=' + encodeURIComponent(product.sku || '');
+  }
   function getSku() {
     var params = new URLSearchParams(window.location.search);
     return (params.get('sku') || '').trim();
@@ -128,9 +131,11 @@
   function renderProduct(product, products) {
     var images = productImages(product);
     var title = product.name || 'Товар';
+    var currentUrl = currentProductUrl(product);
     document.title = title + ' | Усилители связи';
     qs('#product-breadcrumb-current').textContent = title;
-    qs('#product-title').textContent = title;
+    var titleLink = qs('#product-title-link');
+    if (titleLink) { titleLink.textContent = title; titleLink.setAttribute('href', currentUrl); }
     qs('#product-price').textContent = formatPrice(product.price);
     var oldPrice = qs('#product-old-price');
     if (oldPrice) {

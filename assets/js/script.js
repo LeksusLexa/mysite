@@ -1164,7 +1164,7 @@ newsletterPopup();
     const price = parsePrice(priceNode ? priceNode.textContent : "0");
     const qty = Math.max(1, parseInt(qtyNode ? qtyNode.value : "1", 10) || 1);
     const img = imgNode ? imgNode.getAttribute("src") || "" : "";
-    const url = window.location.pathname.split("/").pop() || "shop.html";
+    const url = (window.location.pathname.split("/").pop() || "shop.html") + (window.location.search || "");
     window.MiniCart.add({ name, price, qty, img, url });
   };
 
@@ -1831,13 +1831,14 @@ ${tail}`;
     const linkEl =
       qs(".product__card--title a", scope) ||
       qs(".product__card--thumbnail__link", scope) ||
-      qs(".quickview__info--title a", scope);
+      qs(".quickview__info--title a", scope) ||
+      qs(".product__details--info__title a", scope);
 
     const name = normalize(titleEl ? titleEl.textContent : DEFAULT_NAME) || DEFAULT_NAME;
     const price = parsePrice(priceEl ? priceEl.textContent : "");
     const img = imgEl ? imgEl.getAttribute("src") || "" : "";
     const category = card && card.dataset ? card.dataset.category || "" : "";
-    const fallbackUrl = window.location.pathname.split("/").pop() || "shop.html";
+    const fallbackUrl = (window.location.pathname.split("/").pop() || "shop.html") + (window.location.search || "");
     const link = linkEl ? linkEl.getAttribute("href") || fallbackUrl : fallbackUrl;
 
     return {
@@ -2023,12 +2024,12 @@ ${tail}`;
 
     const linkEl = card
       ? qs(".product__card--title a", card) || qs(".product__card--thumbnail__link", card)
-      : qs(".product__details--title a", scope) || qs(".quickview__info--title a", scope);
+      : qs(".product__details--title a", scope) || qs(".product__details--info__title a", scope) || qs(".quickview__info--title a", scope);
 
     const name = normalize(titleEl ? titleEl.textContent : DEFAULT_NAME) || DEFAULT_NAME;
     const price = parsePrice(priceEl ? priceEl.textContent : "");
     const img = imgEl ? imgEl.getAttribute("src") || "" : "";
-    const fallbackUrl = window.location.pathname.split("/").pop() || "shop.html";
+    const fallbackUrl = (window.location.pathname.split("/").pop() || "shop.html") + (window.location.search || "");
     const url = linkEl ? linkEl.getAttribute("href") || fallbackUrl : fallbackUrl;
 
     return {
