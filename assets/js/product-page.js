@@ -168,6 +168,41 @@
     btn.classList.add('product-action__pulse');
   }
 
+
+  function formatMoney(value) {
+    var amount = Number(value) || 0;
+    try {
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (e) {
+      return amount.toLocaleString('ru-RU') + ' ₽';
+    }
+  }
+  function renderMiniCartFallback() {
+    var listRoot = qs('#minicart-items');
+    if (!listRoot) return;
+    var cart = loadCart();
+    listRoot.innerHTML = cart.map(function (item) {
+      return '<li class="minicart__product--items" data-id="' + escapeHtml(item.id) + '">' +
+        '<div class="minicart__thumb"><a href="' + escapeHtml(item.url || 'shop.html') + '"><img src="' + escapeHtml(item.img || '') + '" alt="product"></a></div>' +
+        '<div class="minicart__text">' +
+          '<h4 class="minicart__subtitle"><a href="' + escapeHtml(item.url || 'shop.html') + '">' + escapeHtml(item.name || 'Товар') + '</a></h4>' +
+          '<span class="color__variant"><b>Кол-во:</b> ' + escapeHtml(String(item.qty || 1)) + '</span>' +
+          '<div class="minicart__price">' + escapeHtml(formatMoney((Number(item.price) || 0) * (Number(item.qty) || 1))) + '</div>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+    var total = cart.reduce(function (sum, item) {
+      return sum + (Number(item.price) || 0) * (Number(item.qty) || 1);
+    }, 0);
+    qsa('.minicart__amount_list b').forEach(function (node) { node.textContent = formatMoney(total); });
+    var desc = qs('.minicart__header--desc');
+    if (desc) desc.textContent = cart.length ? 'Товары в корзине' : 'Корзина пуста';
+  }
+
   function loadCart() {
     try {
       var raw = localStorage.getItem(CART_KEY);
@@ -208,6 +243,7 @@
     if (window.MiniCart && typeof window.MiniCart.render === 'function') {
       window.MiniCart.render();
     }
+    renderMiniCartFallback();
     animateCartButton(triggerBtn);
     showCartFeedback('Товар добавлен в корзину');
   }
@@ -470,6 +506,9 @@
   }
 
   document.addEventListener('click', handlePageActionClick, true);
+  window.addEventListener('focus', renderMiniCartFallback);
+
+  renderMiniCartFallback();
 
   var sku = getSku();
   if (!sku) {
