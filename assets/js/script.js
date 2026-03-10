@@ -537,7 +537,7 @@ function offcanvsSidebar(openTrigger, closeTrigger, wrapper) {
   if (OpenTriggerprimary__btn && WrapperSidebar) {
     OpenTriggerprimary__btn.forEach(function (singleItem) {
       singleItem.addEventListener("click", function (e) {
-        if (e.target.dataset.offcanvas != undefined) {
+        if ((e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.offcanvas != undefined) || (e.target && e.target.closest && e.target.closest('[data-offcanvas]'))) {
           WrapperSidebar.classList.add("active");
           document
             .querySelector("body")
@@ -550,7 +550,7 @@ function offcanvsSidebar(openTrigger, closeTrigger, wrapper) {
 
   if (closeTriggerprimary__btn && WrapperSidebar) {
     closeTriggerprimary__btn.addEventListener("click", function (e) {
-      if (e.target.dataset.offcanvas != undefined) {
+      if ((e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.offcanvas != undefined) || (e.target && e.target.closest && e.target.closest('[data-offcanvas]'))) {
         WrapperSidebar.classList.remove("active");
         document
           .querySelector("body")
