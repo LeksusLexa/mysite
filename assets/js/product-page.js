@@ -62,6 +62,8 @@
       list = exists ? list.filter(function (x) { return x.id !== item.id; }) : list.concat(item);
       saveList(WISHLIST_KEY, list);
       syncActionButtons(currentProduct);
+      pulseActionButton(wishlistBtn);
+      showActionNotice(exists ? 'Удалено из избранного' : ('Добавлено: ' + (currentProduct.name || 'Товар')), 'wishlist.html', 'Открыть избранное');
       if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
       return;
     }
@@ -89,6 +91,8 @@
       }
       saveList(COMPARE_KEY, compareList);
       syncActionButtons(currentProduct);
+      pulseActionButton(compareBtn);
+      showActionNotice(idx !== -1 ? ('Удалено из сравнения: ' + (currentProduct.name || 'Товар')) : ('Добавлено в сравнение: ' + (currentProduct.name || 'Товар')), 'compare.html', 'Открыть сравнение');
       if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
       return;
     }
@@ -132,6 +136,38 @@
     document.body.appendChild(node);
     setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 2200);
   }
+
+  function ensureActionNoticeStyles() {
+    if (document.getElementById('product-action-notice-style')) return;
+    var style = document.createElement('style');
+    style.id = 'product-action-notice-style';
+    style.textContent =
+      '.product-action__pulse{animation:productActionPulse .32s ease;}' +
+      '@keyframes productActionPulse{0%{transform:scale(1);}45%{transform:scale(1.08);}100%{transform:scale(1);}}' +
+      '.product-action__notice{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;max-width:92vw;}' +
+      '.product-action__notice-text{font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+      '.product-action__notice-link{font-size:12px;line-height:1;padding:7px 10px;border-radius:8px;background:#fff;color:#111;text-decoration:none;font-weight:600;flex-shrink:0;}' +
+      '@media (max-width:575px){.product-action__notice{left:12px;right:12px;transform:none;}.product-action__notice-text{white-space:normal;}}';
+    document.head.appendChild(style);
+  }
+  function showActionNotice(text, href, linkLabel) {
+    ensureActionNoticeStyles();
+    var prev = document.getElementById('product-action-notice');
+    if (prev) prev.remove();
+    var node = document.createElement('div');
+    node.id = 'product-action-notice';
+    node.className = 'product-action__notice';
+    node.innerHTML = '<span class="product-action__notice-text">' + escapeHtml(text || '') + '</span>' + (href ? '<a class="product-action__notice-link" href="' + escapeHtml(href) + '">' + escapeHtml(linkLabel || 'Открыть') + '</a>' : '');
+    document.body.appendChild(node);
+    setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 2200);
+  }
+  function pulseActionButton(btn) {
+    if (!btn) return;
+    btn.classList.remove('product-action__pulse');
+    void btn.offsetWidth;
+    btn.classList.add('product-action__pulse');
+  }
+
   function loadCart() {
     try {
       var raw = localStorage.getItem(CART_KEY);
@@ -238,6 +274,8 @@
       list = exists ? list.filter(function (x) { return x.id !== item.id; }) : list.concat(item);
       saveList(WISHLIST_KEY, list);
       syncActionButtons(product);
+      pulseActionButton(btn);
+      showActionNotice(exists ? 'Удалено из избранного' : ('Добавлено: ' + (product.name || 'Товар')), 'wishlist.html', 'Открыть избранное');
       if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
     });
   }
@@ -265,6 +303,8 @@
       }
       saveList(COMPARE_KEY, list);
       syncActionButtons(product);
+      pulseActionButton(btn);
+      showActionNotice(idx !== -1 ? ('Удалено из сравнения: ' + (product.name || 'Товар')) : ('Добавлено в сравнение: ' + (product.name || 'Товар')), 'compare.html', 'Открыть сравнение');
       if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
     });
   }
