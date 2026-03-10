@@ -103,30 +103,35 @@
 
 
   function ensureCartFeedbackStyles() {
-    if (document.getElementById('product-cart-feedback-style')) return;
+    if (document.getElementById('product-cart-feedback-style') || document.getElementById('global-minicart-style')) return;
     var style = document.createElement('style');
     style.id = 'product-cart-feedback-style';
     style.textContent =
-      '.product-cart__pulse{animation:productCartPulse .32s ease;}' +
-      '@keyframes productCartPulse{0%{transform:scale(1);}45%{transform:scale(1.06);}100%{transform:scale(1);}}' +
-      '.product-cart__notice{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;max-width:92vw;}' +
-      '.product-cart__notice-text{font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
-      '.product-cart__notice-link{font-size:12px;line-height:1;padding:7px 10px;border-radius:8px;background:#fff;color:#111;text-decoration:none;font-weight:600;flex-shrink:0;}' +
-      '@media (max-width:575px){.product-cart__notice{left:12px;right:12px;transform:none;}.product-cart__notice-text{white-space:normal;}}';
+      '.cart__btn--animate{animation:cartBtnPulse .34s ease;}' +
+      '@keyframes cartBtnPulse{0%{transform:scale(1);}45%{transform:scale(1.08);}100%{transform:scale(1);}}' +
+      '.cart__notice{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#111;color:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;max-width:92vw;}' +
+      '.cart__notice--text{font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+      '.cart__notice--btn{font-size:12px;line-height:1;padding:7px 10px;border-radius:8px;background:#fff;color:#111;text-decoration:none;font-weight:600;flex-shrink:0;}' +
+      '@media (max-width:575px){.cart__notice{left:12px;right:12px;transform:none;}.cart__notice--text{white-space:normal;}}';
     document.head.appendChild(style);
   }
-  function showCartFeedback(name) {
+  function animateCartButton(btn) {
+    if (!btn) return;
+    btn.classList.remove('cart__btn--animate');
+    void btn.offsetWidth;
+    btn.classList.add('cart__btn--animate');
+  }
+  function showCartFeedback(text) {
     ensureCartFeedbackStyles();
-    var prev = document.getElementById('product-cart-notice');
+    var prev = document.getElementById('cart-notice');
     if (prev) prev.remove();
     var node = document.createElement('div');
-    node.id = 'product-cart-notice';
-    node.className = 'product-cart__notice';
-    node.innerHTML = '<span class="product-cart__notice-text">Добавлено в корзину: ' + escapeHtml(name || 'Товар') + '</span><a class="product-cart__notice-link" href="checkout.html">Оформить</a>';
+    node.id = 'cart-notice';
+    node.className = 'cart__notice';
+    node.innerHTML = '<span class="cart__notice--text">' + escapeHtml(text || 'Товар добавлен в корзину') + '</span>' + '<a class="cart__notice--btn" href="javascript:void(0)" data-open-minicart>Открыть корзину</a>';
     document.body.appendChild(node);
     setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 2200);
   }
-
   function loadCart() {
     try {
       var raw = localStorage.getItem(CART_KEY);
@@ -167,13 +172,8 @@
     if (window.MiniCart && typeof window.MiniCart.render === 'function') {
       window.MiniCart.render();
     }
-    if (triggerBtn) {
-      triggerBtn.classList.remove('product-cart__pulse');
-      void triggerBtn.offsetWidth;
-      triggerBtn.classList.add('product-cart__pulse');
-    }
-    showCartFeedback(product.name || 'Товар');
-    openMiniCart();
+    animateCartButton(triggerBtn);
+    showCartFeedback('Товар добавлен в корзину');
   }
   function bindMiniCartOpeners() {
     qsa('.minicart__open--btn').forEach(function (btn) {
