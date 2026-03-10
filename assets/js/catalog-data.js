@@ -279,6 +279,12 @@
     }).join('');
     root.innerHTML = '<div class="product__section--inner product__grid--inner"><div class="' + rowClass + '">' + cardsHtml + '</div></div>';
   }
+  function renderError(roots, message) {
+    (roots || []).forEach(function (root) {
+      var text = root.getAttribute('data-catalog-mode') === 'list' ? 'Список товаров не удалось загрузить.' : 'Каталог не удалось загрузить.';
+      root.innerHTML = '<div class="product__section--inner"><div class="row"><div class="col-12"><div class="alert alert-danger text-center py-4 mb-0">' + escapeHtml(message || text) + '</div></div></div></div>';
+    });
+  }
   function updateCounters(products) {
     qsa('.product__showing--count').forEach(function (node) {
       var total = products.length;
@@ -310,6 +316,7 @@
       })
       .catch(function (error) {
         console.error(error);
+        renderError(roots, 'Не удалось загрузить товары из assets/data/products.json. Открой сайт через локальный сервер или проверь файл данных.');
       });
   }
 
