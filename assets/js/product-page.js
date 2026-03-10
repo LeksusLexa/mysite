@@ -21,6 +21,10 @@
     return 'shop.html';
   }
 
+  var FALLBACK_PRODUCT_IMAGE = 'assets/img/product/product2.webp';
+  var EMPTY_IMAGE =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
   var currentProduct = null;
 
   var WISHLIST_KEY = 'antenna_shop_wishlist_v1';
@@ -401,7 +405,24 @@
       if (!src || images.indexOf(src) !== -1) return;
       images.push(src);
     });
-    return images.length ? images : ['assets/img/product/product1.webp'];
+    return images.length ? images : [FALLBACK_PRODUCT_IMAGE];
+  }
+  function bindImageFallback(img, fallbackSrc) {
+    if (!img) return;
+    img.setAttribute('data-fallback-src', fallbackSrc || FALLBACK_PRODUCT_IMAGE);
+    if (img.dataset.imageFallbackBound === '1') return;
+    img.dataset.imageFallbackBound = '1';
+    img.addEventListener('error', function () {
+      var fallback = img.getAttribute('data-fallback-src') || FALLBACK_PRODUCT_IMAGE;
+      var currentSrc = img.getAttribute('src') || '';
+      if (currentSrc && currentSrc !== fallback) {
+        img.src = fallback;
+        return;
+      }
+      img.src = EMPTY_IMAGE;
+      img.alt = '';
+      img.classList.add('is-image-empty');
+    });
   }
   function renderThumbs(images) {
     var wrap = qs('#product-gallery-thumbs');
@@ -410,12 +431,15 @@
     wrap.innerHTML = images.map(function (src, index) {
       return '<button class="dynamic-product__thumb' + (index === 0 ? ' is-active' : '') + '" type="button" data-image-src="' + escapeHtml(src) + '"><img src="' + escapeHtml(src) + '" alt="Миниатюра"></button>';
     }).join('');
+    qsa('img', wrap).forEach(function (img) { bindImageFallback(img, FALLBACK_PRODUCT_IMAGE); });
     wrap.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-image-src]');
       if (!btn) return;
       qsa('.dynamic-product__thumb', wrap).forEach(function (node) { node.classList.remove('is-active'); });
       btn.classList.add('is-active');
       mainImage.src = btn.getAttribute('data-image-src');
+      mainImage.classList.remove('is-image-empty');
+      mainImage.alt = currentProduct && currentProduct.name ? currentProduct.name : 'Товар';
     });
   }
   function renderSpecs(specs) {
@@ -441,8 +465,8 @@
         '<article class="product__card" data-category="' + escapeHtml(product.category || '') + '">' +
         '<div class="product__card--thumbnail">' +
         '<a class="product__card--thumbnail__link display-block" href="' + escapeHtml(url) + '">' +
-        '<img class="product__card--thumbnail__img product__primary--img display-block" src="' + escapeHtml(product.image || 'assets/img/product/product1.webp') + '" alt="' + escapeHtml(product.name) + '">' +
-        '<img class="product__card--thumbnail__img product__secondary--img display-block" src="' + escapeHtml(product.image2 || product.image || 'assets/img/product/product1.webp') + '" alt="' + escapeHtml(product.name) + '">' +
+        '<img class="product__card--thumbnail__img product__primary--img display-block" src="' + escapeHtml(product.image || FALLBACK_PRODUCT_IMAGE) + '" alt="' + escapeHtml(product.name) + '">' +
+        '<img class="product__card--thumbnail__img product__secondary--img display-block" src="' + escapeHtml(product.image2 || product.image || FALLBACK_PRODUCT_IMAGE) + '" alt="' + escapeHtml(product.name) + '">' +
         '</a>' +
         '<ul class="product__card--action d-flex align-items-center justify-content-center">' +
         '<li class="product__card--action__list"><a class="product__card--action__btn" title="В избранное" href="wishlist.html"><svg class="product__card--action__btn--svg" xmlns="http://www.w3.org/2000/svg" width="25.51" height="22.443" viewBox="0 0 512 512"><path d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"></path></svg><span class="visually-hidden">В избранное</span></a></li>' +
@@ -513,6 +537,8 @@
     qs('#product-stock').textContent = product.stock ? String(product.stock) + ' шт.' : (product.badge || 'По запросу');
     qs('#product-badge').textContent = product.badge || 'В наличии';
     var mainImage = qs('#product-main-image');
+    bindImageFallback(mainImage, FALLBACK_PRODUCT_IMAGE);
+    mainImage.classList.remove('is-image-empty');
     mainImage.src = images[0];
     mainImage.alt = title;
     renderThumbs(images);
