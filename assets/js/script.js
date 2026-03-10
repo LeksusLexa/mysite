@@ -713,8 +713,7 @@ if (quantityWrapper) {
       if (input.dataset.counter != undefined) {
         let value = parseInt(input.value, 10);
         value = isNaN(value) ? 0 : value;
-        value < 1 ? (value = 1) : "";
-        value--;
+        value = value <= 1 ? 1 : value - 1;
         input.value = value;
       }
     });

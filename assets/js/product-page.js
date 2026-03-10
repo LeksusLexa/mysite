@@ -186,6 +186,10 @@
     }
   }
   function renderMiniCartFallback() {
+    if (window.MiniCart && typeof window.MiniCart.render === 'function') {
+      window.MiniCart.render();
+      return;
+    }
     var listRoot = qs('#minicart-items');
     if (!listRoot) return;
     var cart = loadCart();
@@ -252,8 +256,9 @@
     saveCart(list);
     if (window.MiniCart && typeof window.MiniCart.render === 'function') {
       window.MiniCart.render();
+    } else {
+      renderMiniCartFallback();
     }
-    renderMiniCartFallback();
     animateCartButton(triggerBtn);
     showCartFeedback('Товар добавлен в корзину');
   }
