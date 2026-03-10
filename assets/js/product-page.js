@@ -21,12 +21,85 @@
     return 'shop.html';
   }
 
+  var currentProduct = null;
+
   var WISHLIST_KEY = 'antenna_shop_wishlist_v1';
   var COMPARE_KEY = 'antenna_shop_compare_v1';
   var COMPARE_LIMIT = 2;
 
 
   var CART_KEY = 'antenna_shop_cart_v1';
+
+
+  function handlePageActionClick(e) {
+    var cartBtn = e.target.closest('#product-add-to-cart');
+    if (cartBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!currentProduct) return;
+      var qtyInput = qs('#product-qty');
+      var mainImage = qs('#product-main-image');
+      var qty = Math.max(1, parseInt(qtyInput && qtyInput.value ? qtyInput.value : '1', 10) || 1);
+      addToCartManual(currentProduct, qty, mainImage ? (mainImage.getAttribute('src') || '') : '');
+      return;
+    }
+
+    var wishlistBtn = e.target.closest('#product-add-to-wishlist');
+    if (wishlistBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!currentProduct) return;
+      var list = loadList(WISHLIST_KEY);
+      var item = {
+        id: itemId(currentProduct),
+        name: currentProduct.name || 'Товар',
+        price: Number(currentProduct.price) || 0,
+        img: currentProduct.image || '',
+        category: currentProduct.category || '',
+        url: currentProductUrl(currentProduct)
+      };
+      var exists = list.some(function (x) { return x.id === item.id; });
+      list = exists ? list.filter(function (x) { return x.id !== item.id; }) : list.concat(item);
+      saveList(WISHLIST_KEY, list);
+      syncActionButtons(currentProduct);
+      if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
+      return;
+    }
+
+    var compareBtn = e.target.closest('#product-add-to-compare');
+    if (compareBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!currentProduct) return;
+      var compareList = loadList(COMPARE_KEY);
+      var compareItem = {
+        id: itemId(currentProduct),
+        name: currentProduct.name || 'Товар',
+        price: Number(currentProduct.price) || 0,
+        img: currentProduct.image || '',
+        category: currentProduct.category || '',
+        link: currentProductUrl(currentProduct)
+      };
+      var idx = compareList.findIndex(function (x) { return x.id === compareItem.id; });
+      if (idx !== -1) {
+        compareList.splice(idx, 1);
+      } else {
+        if (compareList.length >= COMPARE_LIMIT) compareList.shift();
+        compareList.push(compareItem);
+      }
+      saveList(COMPARE_KEY, compareList);
+      syncActionButtons(currentProduct);
+      if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
+      return;
+    }
+
+    var openCartBtn = e.target.closest('.minicart__open--btn');
+    if (openCartBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openMiniCart();
+    }
+  }
 
   function loadCart() {
     try {
@@ -288,6 +361,7 @@
     content.classList.remove('d-none');
   }
   function renderProduct(product, products) {
+    currentProduct = product;
     var images = productImages(product);
     var title = product.name || 'Товар';
     var currentUrl = currentProductUrl(product);
@@ -322,6 +396,8 @@
     showContent();
     if (window.dispatchEvent) window.dispatchEvent(new Event('focus'));
   }
+
+  document.addEventListener('click', handlePageActionClick, true);
 
   var sku = getSku();
   if (!sku) {
