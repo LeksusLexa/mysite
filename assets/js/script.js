@@ -1232,6 +1232,428 @@ newsletterPopup();
   window.addEventListener("focus", renderCart);
 })();
 
+// Global storefront overrides: header/footer cleanup, product/article simplification,
+// checkout to account flow, and local order history.
+(() => {
+  const ORDERS_KEY = "antenna_shop_orders_v1";
+
+  const money = (n) => {
+    const value = Number(n) || 0;
+    try {
+      return new Intl.NumberFormat("ru-RU", {
+        style: "currency",
+        currency: "RUB",
+        maximumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return `₽${Math.round(value)}`;
+    }
+  };
+
+  const escapeHtml = (text) =>
+    String(text || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const formatDate = (value) => {
+    const date = value ? new Date(value) : new Date();
+    try {
+      return new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date);
+    } catch {
+      return date.toLocaleDateString("ru-RU");
+    }
+  };
+
+  const loadOrders = () => {
+    try {
+      const raw = localStorage.getItem(ORDERS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveOrders = (orders) => {
+    try {
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(Array.isArray(orders) ? orders : []));
+    } catch {}
+  };
+
+  const ensureOrders = () => {
+    const existing = loadOrders();
+    if (existing.length) return existing;
+    const seeded = [
+      {
+        id: "7814",
+        date: "2026-02-11T10:00:00+03:00",
+        deliveryType: "delivery",
+        paymentLabel: "Оплачен",
+        email: "nikita@example.com",
+        phone: "+7 (999) 123-45-67",
+        address: "Москва, ул. Орджоникидзе, 11с1",
+        items: [
+          { name: "Репитер LTE/GSM для дома", qty: 1, price: 24700 },
+        ],
+        total: 24700,
+      },
+      {
+        id: "7792",
+        date: "2026-02-02T14:30:00+03:00",
+        deliveryType: "pickup",
+        paymentLabel: "Оплата в магазине",
+        email: "nikita@example.com",
+        phone: "+7 (999) 123-45-67",
+        address: "Москва, Электрозаводская, 24",
+        items: [
+          { name: "Панельная антенна MIMO 17 dBi", qty: 1, price: 18300 },
+        ],
+        total: 18300,
+      },
+      {
+        id: "7726",
+        date: "2026-01-25T09:15:00+03:00",
+        deliveryType: "delivery",
+        paymentLabel: "Оплачен",
+        email: "nikita@example.com",
+        phone: "+7 (999) 123-45-67",
+        address: "Москва, ул. Орджоникидзе, 11с1",
+        items: [
+          { name: "Усилитель сигнала 3G/4G", qty: 1, price: 31200 },
+        ],
+        total: 31200,
+      },
+    ];
+    saveOrders(seeded);
+    return seeded;
+  };
+
+  const ensureGlobalOverridesStyle = () => {
+    if (document.getElementById("site-overrides-style")) return;
+    const style = document.createElement("style");
+    style.id = "site-overrides-style";
+    style.textContent =
+      ".header__topbar{display:none !important;}" +
+      ".order__detail--btn{border:1px solid #d7dfe9;background:#fff;border-radius:8px;padding:7px 10px;font-size:13px;color:#132235;}" +
+      ".account-order-details__list{display:grid;gap:8px;}" +
+      ".account-order-details__item{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #e6ebf2;}" +
+      ".account-order-details__item:last-child{border-bottom:0;}" +
+      ".account-order-details__products{margin-top:14px;padding-top:14px;border-top:1px solid #e8edf4;}" +
+      ".account-order-details__products li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;}" +
+      ".checkout-empty{padding:16px 0;color:#64748b;font-size:14px;}" +
+      "@media (max-width:767px){.account-order-details__item{flex-direction:column;gap:4px;}}";
+    document.head.appendChild(style);
+  };
+
+  const updateFooterBranding = () => {
+    document.querySelectorAll(".copyright__content").forEach((node) => {
+      node.innerHTML = 'Создано <a class="copyright__content--link" href="https://adsquad.ru" target="_blank" rel="noopener noreferrer">adsquad.ru</a>';
+    });
+  };
+
+  const simplifyProductDetails = () => {
+    if (!document.querySelector(".product__details--tab__section")) return;
+
+    document.querySelectorAll(".product__details--tab").forEach((tabs) => {
+      tabs.style.display = "none";
+    });
+
+    document.querySelectorAll("#reviews, #information").forEach((pane) => pane.remove());
+
+    document.querySelectorAll(".product__tab--content__step.style2").forEach((step) => {
+      step.classList.remove("d-flex", "align-items-center", "style2");
+      const banner = step.querySelector(".product__tab--content__banner");
+      const percent = step.querySelector(".image__with--text__percent");
+      if (banner) banner.remove();
+      if (percent) percent.remove();
+    });
+
+    document.querySelectorAll(".product__tab--content__desc").forEach((node) => {
+      if (node.textContent.includes("совместим(а) с типовыми системами усиления сигнала. При необходимости подберите дополнительные комплектующие в каталоге.")) {
+        node.remove();
+      }
+    });
+  };
+
+  const simplifyBlogDetails = () => {
+    if (!document.querySelector(".blog__details--section")) return;
+
+    const container = document.querySelector(".blog__details--section .container-fluid");
+    if (container) container.classList.replace("container-fluid", "container");
+
+    document.querySelectorAll(".comment__box, .blog__sidebar--widget, .blog__tags--social__media").forEach((node) => node.remove());
+    document.querySelectorAll(".blog__details--section .col-xl-3.col-lg-4").forEach((node) => node.remove());
+
+    const mainCol = document.querySelector(".blog__details--section .col-xl-9");
+    if (mainCol) {
+      mainCol.className = "col-12";
+    }
+  };
+
+  const trimShopSidebar = () => {
+    const path = window.location.pathname.split("/").pop() || "";
+    if (path !== "shop.html") return;
+
+    const allowed = ["поиск", "категории", "фильтр по цене", "хиты продаж"];
+    const areas = document.querySelectorAll(".shop__sidebar--widget, .offcanvas__filter--sidebar__inner");
+
+    areas.forEach((area) => {
+      const widgets = Array.from(area.querySelectorAll(":scope > .single__widget"));
+      widgets.forEach((widget) => {
+        const title = (widget.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
+        const keep = allowed.includes(title);
+        widget.style.display = keep ? "" : "none";
+      });
+
+      const ordered = widgets
+        .filter((widget) => widget.style.display !== "none")
+        .sort((a, b) => {
+          const aTitle = (a.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
+          const bTitle = (b.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
+          return allowed.indexOf(aTitle) - allowed.indexOf(bTitle);
+        });
+
+      ordered.forEach((widget) => area.appendChild(widget));
+    });
+  };
+
+  const renderAccountOrders = () => {
+    const tbody = document.getElementById("account-orders-body");
+    if (!tbody) return;
+
+    const orders = ensureOrders().sort((a, b) => new Date(b.date) - new Date(a.date));
+    const totalOrdersNode = document.getElementById("account-total-orders");
+    const activeOrdersNode = document.getElementById("account-active-orders");
+
+    if (totalOrdersNode) totalOrdersNode.textContent = String(orders.length);
+    if (activeOrdersNode) activeOrdersNode.textContent = String(Math.min(orders.length, 2));
+
+    tbody.innerHTML = orders.map((order) => {
+      const itemsText = (order.items || [])
+        .map((item) => `${item.name} x${item.qty}`)
+        .join(", ");
+      return (
+        "<tr>" +
+          `<td>#${escapeHtml(order.id)}</td>` +
+          `<td>${escapeHtml(formatDate(order.date))}</td>` +
+          `<td>${escapeHtml(itemsText)}</td>` +
+          `<td>${escapeHtml(money(order.total))}</td>` +
+          `<td><button class="order__detail--btn" type="button" data-order-detail="${escapeHtml(order.id)}">Посмотреть</button></td>` +
+        "</tr>"
+      );
+    }).join("");
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedOrder = params.get("order");
+    if (selectedOrder) {
+      showOrderDetails(selectedOrder);
+    }
+  };
+
+  const showOrderDetails = (orderId) => {
+    const panel = document.getElementById("account-order-details");
+    if (!panel) return;
+
+    const orders = ensureOrders();
+    const order = orders.find((item) => String(item.id) === String(orderId).replace("#", ""));
+    if (!order) {
+      panel.style.display = "none";
+      panel.innerHTML = "";
+      return;
+    }
+
+    panel.innerHTML =
+      `<h3 class="cabinet__title">Заказ #${escapeHtml(order.id)}</h3>` +
+      '<div class="account-order-details__list">' +
+        `<div class="account-order-details__item"><span class="cabinet__label">Дата</span><span class="cabinet__value">${escapeHtml(formatDate(order.date))}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Email</span><span class="cabinet__value">${escapeHtml(order.email || "-")}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Телефон</span><span class="cabinet__value">${escapeHtml(order.phone || "-")}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Получение</span><span class="cabinet__value">${order.deliveryType === "delivery" ? "Доставка" : "Самовывоз"}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Оплата</span><span class="cabinet__value">${escapeHtml(order.paymentLabel || "-")}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Адрес</span><span class="cabinet__value">${escapeHtml(order.address || "-")}</span></div>` +
+      "</div>" +
+      '<div class="account-order-details__products">' +
+        '<h4 class="cabinet__title" style="font-size:18px;">Состав заказа</h4>' +
+        "<ul>" +
+          (order.items || []).map((item) =>
+            `<li><span>${escapeHtml(item.name)} x${escapeHtml(item.qty)}</span><strong>${escapeHtml(money((Number(item.price) || 0) * (Number(item.qty) || 1)))}</strong></li>`
+          ).join("") +
+        "</ul>" +
+      "</div>";
+    panel.style.display = "block";
+  };
+
+  const setupAccountOrderDetails = () => {
+    document.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-order-detail]");
+      if (!btn) return;
+      showOrderDetails(btn.getAttribute("data-order-detail"));
+    });
+  };
+
+  const setupCheckout = () => {
+    const form = document.getElementById("checkout-form");
+    if (!form) return;
+
+    const body = document.getElementById("checkout-cart-body");
+    const subtotalNode = document.getElementById("checkout-subtotal");
+    const totalNode = document.getElementById("checkout-total");
+    const summaryNode = document.getElementById("checkout-delivery-summary");
+    const methodInputs = Array.from(document.querySelectorAll("input[name='delivery-method']"));
+    const deliveryFields = document.getElementById("checkout-delivery-fields");
+    const pickupFields = document.getElementById("checkout-pickup-fields");
+    const addressSelect = document.getElementById("checkout-address-select");
+    const newAddressBlock = document.getElementById("checkout-new-address");
+    const customAddressInput = document.getElementById("checkout-custom-address");
+    const pickupAddress = document.getElementById("checkout-pickup-address");
+    const submitOrderBtn = document.getElementById("checkout-submit-order");
+    const invoiceBtn = document.getElementById("checkout-invoice");
+    const storePayBtn = document.getElementById("checkout-store-pay");
+
+    const getCart = () => (window.MiniCart && typeof window.MiniCart.get === "function" ? window.MiniCart.get() : []);
+
+    const renderSummary = () => {
+      const cart = getCart();
+      const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+
+      if (body) {
+        body.innerHTML = cart.length
+          ? cart.map((item) => (
+              "<tr class='cart__table--body__items'>" +
+                `<td>${escapeHtml(item.name || "Товар")} x${escapeHtml(item.qty || 1)}</td>` +
+                `<td style="text-align:right;">${escapeHtml(money((Number(item.price) || 0) * (Number(item.qty) || 1)))}</td>` +
+              "</tr>"
+            )).join("")
+          : "<tr><td colspan='2' class='checkout-empty'>Корзина пуста</td></tr>";
+      }
+
+      if (subtotalNode) subtotalNode.textContent = money(total);
+      if (totalNode) totalNode.textContent = money(total);
+      const hasCart = cart.length > 0;
+      if (submitOrderBtn) submitOrderBtn.disabled = !hasCart;
+      if (invoiceBtn) invoiceBtn.disabled = !hasCart;
+      if (storePayBtn) storePayBtn.disabled = !hasCart;
+    };
+
+    const syncAddressState = () => {
+      const isNew = addressSelect && addressSelect.value === "new";
+      if (newAddressBlock) newAddressBlock.style.display = isNew ? "block" : "none";
+      if (pickupAddress && addressSelect && !isNew) pickupAddress.textContent = addressSelect.value;
+    };
+
+    const syncMethodState = () => {
+      const method = methodInputs.find((input) => input.checked)?.value || "pickup";
+      const isDelivery = method === "delivery";
+
+      if (deliveryFields) deliveryFields.style.display = isDelivery ? "block" : "none";
+      if (pickupFields) pickupFields.style.display = isDelivery ? "none" : "block";
+      if (submitOrderBtn) submitOrderBtn.style.display = isDelivery ? "inline-flex" : "none";
+      if (invoiceBtn) invoiceBtn.style.display = isDelivery ? "none" : "inline-flex";
+      if (storePayBtn) storePayBtn.style.display = isDelivery ? "none" : "inline-flex";
+      if (summaryNode) summaryNode.textContent = isDelivery ? "Доставка" : "Самовывоз";
+    };
+
+    const placeOrder = (paymentLabel) => {
+      const cart = getCart();
+      if (!cart.length) {
+        window.alert("Корзина пуста.");
+        return;
+      }
+
+      const deliveryType = methodInputs.find((input) => input.checked)?.value || "pickup";
+      const email = document.getElementById("checkout-email")?.value.trim() || "";
+      const phone = document.getElementById("checkout-phone")?.value.trim() || "";
+      const firstName = document.getElementById("input1")?.value.trim() || "";
+      const lastName = document.getElementById("input2")?.value.trim() || "";
+      const company = document.getElementById("input3")?.value.trim() || "";
+      const deliveryAddress = document.getElementById("input4")?.value.trim() || "";
+      const selectedAddress = addressSelect?.value === "new" ? customAddressInput?.value.trim() || "" : addressSelect?.value || "";
+
+      if (!email || !phone) {
+        window.alert("Заполните Email и номер.");
+        return;
+      }
+
+      if (deliveryType === "delivery" && (!firstName || !lastName || !deliveryAddress)) {
+        window.alert("Для доставки заполните имя, фамилию и адрес доставки.");
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+      const orderId = String(Date.now()).slice(-6);
+      const order = {
+        id: orderId,
+        date: new Date().toISOString(),
+        deliveryType,
+        paymentLabel,
+        email,
+        phone,
+        company,
+        address: deliveryType === "delivery" ? deliveryAddress : selectedAddress,
+        recipient: [firstName, lastName].filter(Boolean).join(" "),
+        items: cart.map((item) => ({
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+        })),
+        total,
+      };
+
+      const orders = ensureOrders();
+      orders.unshift(order);
+      saveOrders(orders);
+
+      if (window.MiniCart && typeof window.MiniCart.clear === "function") {
+        window.MiniCart.clear();
+      }
+
+      window.location.href = `my-account.html?order=${encodeURIComponent(orderId)}`;
+    };
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      placeOrder("Оформить заказ");
+    });
+
+    if (invoiceBtn) {
+      invoiceBtn.addEventListener("click", () => placeOrder("Оплата по счету"));
+    }
+    if (storePayBtn) {
+      storePayBtn.addEventListener("click", () => placeOrder("Оплата в магазине"));
+    }
+    if (addressSelect) {
+      addressSelect.addEventListener("change", () => {
+        syncAddressState();
+      });
+    }
+    methodInputs.forEach((input) => {
+      input.addEventListener("change", syncMethodState);
+    });
+
+    renderSummary();
+    syncAddressState();
+    syncMethodState();
+    window.addEventListener("focus", renderSummary);
+    window.addEventListener("storage", renderSummary);
+  };
+
+  ensureGlobalOverridesStyle();
+  updateFooterBranding();
+  simplifyProductDetails();
+  simplifyBlogDetails();
+  trimShopSidebar();
+  setupAccountOrderDetails();
+  renderAccountOrders();
+  setupCheckout();
+})();
+
 // Global compare actions (catalog cards + quickview) with mini panel
 (() => {
   const COMPARE_KEY = "antenna_shop_compare_v1";

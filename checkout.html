@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Оформление заказа</title>
+  <title>Корзина</title>
   <meta name="description" content="Интернет-магазин антенн и усилителей связи">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
@@ -536,10 +536,10 @@
                 <div class="row row-cols-1">
                     <div class="col">
                         <div class="breadcrumb__content">
-                            <h1 class="breadcrumb__content--title mb-10">Оформление заказа</h1>
+                            <h1 class="breadcrumb__content--title mb-10">Корзина</h1>
                             <ul class="breadcrumb__content--menu d-flex">
                                 <li class="breadcrumb__content--menu__items"><a href="index.html">Главная</a></li>
-                                <li class="breadcrumb__content--menu__items"><span class="text__secondary">Оформление заказа</span></li>
+                                <li class="breadcrumb__content--menu__items"><span class="text__secondary">Корзина</span></li>
                             </ul>
                         </div>
                     </div>
@@ -552,77 +552,69 @@
 <section class="my__account--section section--padding">
     <div class="container">
         <div class="cabinet">
-            <p class="cabinet__welcome">Проверьте товары, адрес и оплату перед подтверждением заказа.</p>
-            <div class="cabinet__layout">
-                <aside class="cabinet__card">
-                    <h2 class="cabinet__title">Личный кабинет</h2>
-                    <nav class="cabinet__menu">
-                        <a href="my-account.html">Панель управления</a>
-                        <a href="my-account-2.html">Адреса доставки</a>
-                        <a href="my-account-favorites.html">Избранное</a>
-                        <a href="my-account-settings.html">Настройки профиля</a>
-                        <a class="is-active" href="checkout.html">Мои оплаты</a>
-                        <a href="login.html">Выйти</a>
-                    </nav>
-                </aside>
-                <div class="cabinet__grid">
-                    <form class="cabinet__card" action="#">
+            <p class="cabinet__welcome">Проверьте товары и выберите самовывоз или доставку перед подтверждением заказа.</p>
+            <div class="cabinet__grid">
+                    <form class="cabinet__card" id="checkout-form" action="#">
                         <h3 class="cabinet__subtitle">Контактная информация</h3>
-                        <div class="cabinet__field checkout__email--phone">
-                            <label for="checkout-contact">Email или номер мобильного телефона</label>
-                            <input id="checkout-contact" class="checkout__input--field" placeholder="Email или номер мобильного телефона" type="text">
-                        </div>
-                        <div class="cabinet__field">
-                            <label class="cabinet__check"><input id="check1" type="checkbox"> Присылать мне новости и специальные предложения</label>
-                        </div>
-
-                        <h3 class="cabinet__subtitle">Платежные данные</h3>
                         <div class="cabinet__form-grid">
                             <div class="cabinet__field">
-                                <label for="input1">Имя</label>
-                                <input id="input1" class="checkout__input--field" placeholder="Имя" type="text">
+                                <label for="checkout-email">Email</label>
+                                <input id="checkout-email" class="checkout__input--field" placeholder="Email" type="email">
                             </div>
                             <div class="cabinet__field">
-                                <label for="input2">Фамилия</label>
-                                <input id="input2" class="checkout__input--field" placeholder="Фамилия" type="text">
+                                <label for="checkout-phone">Номер</label>
+                                <input id="checkout-phone" class="checkout__input--field" placeholder="+7 (___) ___-__-__" type="tel">
                             </div>
                         </div>
                         <div class="cabinet__field">
-                            <label for="input3">Название компании</label>
-                            <input id="input3" class="checkout__input--field" placeholder="Компания (необязательно)" type="text">
+                            <label for="checkout-address-select">Адрес доставки</label>
+                            <select id="checkout-address-select" class="checkout__input--select__field">
+                                <option value="Москва, ул. Орджоникидзе, 11с1">Москва, ул. Орджоникидзе, 11с1</option>
+                                <option value="Москва, Электрозаводская, 24">Москва, Электрозаводская, 24</option>
+                                <option value="new">Новый адрес</option>
+                            </select>
                         </div>
-                        <div class="cabinet__field">
-                            <label for="input4">Адрес</label>
-                            <input id="input4" class="checkout__input--field" placeholder="Адрес" type="text">
-                        </div>
-                        <div class="cabinet__field">
-                            <label for="input-flat">Квартира, офис и т.д.</label>
-                            <input id="input-flat" class="checkout__input--field" placeholder="Квартира, офис и т.д. (необязательно)" type="text">
-                        </div>
-                        <div class="cabinet__form-grid">
-                            <div class="cabinet__field">
-                                <label for="input5">Город</label>
-                                <input id="input5" class="checkout__input--field" placeholder="Город" type="text">
-                            </div>
-                            <div class="cabinet__field">
-                                <label for="country">Страна/регион</label>
-                                <select id="country" class="checkout__input--select__field">
-                                    <option value="ru">Россия</option>
-                                    <option value="kz">Казахстан</option>
-                                    <option value="by">Беларусь</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="cabinet__field">
-                            <label for="input6">Почтовый индекс</label>
-                            <input id="input6" class="checkout__input--field" placeholder="Почтовый индекс" type="text">
-                        </div>
-                        <div class="cabinet__field">
-                            <label for="order">Комментарий к заказу</label>
-                            <textarea id="order" class="checkout__notes--textarea__field" placeholder="Примечания к заказу, например особые пожелания по доставке." spellcheck="false"></textarea>
-                        </div>
+                        <h3 class="cabinet__subtitle">Способ получения</h3>
                         <div class="cabinet__actions">
-                            <button class="cabinet__btn is-primary" type="submit">Оформить заказ</button>
+                            <label class="cabinet__check"><input id="delivery-pickup" name="delivery-method" type="radio" value="pickup" checked> Самовывоз</label>
+                            <label class="cabinet__check"><input id="delivery-courier" name="delivery-method" type="radio" value="delivery"> Доставка</label>
+                        </div>
+                        <div id="checkout-delivery-fields" style="display:none; margin-top:14px;">
+                            <h3 class="cabinet__subtitle">Данные для доставки</h3>
+                            <div class="cabinet__form-grid">
+                                <div class="cabinet__field">
+                                    <label for="input1">Имя</label>
+                                    <input id="input1" class="checkout__input--field" placeholder="Имя" type="text">
+                                </div>
+                                <div class="cabinet__field">
+                                    <label for="input2">Фамилия</label>
+                                    <input id="input2" class="checkout__input--field" placeholder="Фамилия" type="text">
+                                </div>
+                            </div>
+                            <div class="cabinet__field">
+                                <label for="input3">Название компании</label>
+                                <input id="input3" class="checkout__input--field" placeholder="Название компании" type="text">
+                            </div>
+                            <div class="cabinet__field">
+                                <label for="input4">Адрес доставки</label>
+                                <input id="input4" class="checkout__input--field" placeholder="Адрес доставки" type="text">
+                            </div>
+                        </div>
+                        <div id="checkout-pickup-fields" style="margin-top:14px;">
+                            <h3 class="cabinet__subtitle">Самовывоз</h3>
+                            <div class="cabinet__row"><span class="cabinet__label">Пункт выдачи</span><span class="cabinet__value" id="checkout-pickup-address">Москва, ул. Орджоникидзе, 11с1</span></div>
+                        </div>
+                        <div id="checkout-new-address" style="display:none;">
+                            <h3 class="cabinet__subtitle">Новый адрес</h3>
+                            <div class="cabinet__field">
+                                <label for="checkout-custom-address">Введите адрес</label>
+                                <input id="checkout-custom-address" class="checkout__input--field" placeholder="Город, улица, дом" type="text">
+                            </div>
+                        </div>
+                        <div class="cabinet__actions" id="checkout-actions">
+                            <button class="cabinet__btn is-primary" id="checkout-submit-order" type="submit">Оформить заказ</button>
+                            <button class="cabinet__btn" id="checkout-invoice" type="button" style="display:none;">Оплата по счету</button>
+                            <button class="cabinet__btn" id="checkout-store-pay" type="button" style="display:none;">Оплата в магазине</button>
                             <a class="cabinet__btn" href="shop.html">Вернуться в каталог</a>
                         </div>
                     </form>
@@ -643,8 +635,8 @@
                                     <td><span id="checkout-subtotal">₽0</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Доставка</td>
-                                    <td>Рассчитывается</td>
+                                    <td>Получение</td>
+                                    <td><span id="checkout-delivery-summary">Самовывоз</span></td>
                                 </tr>
                             </tbody>
                             <tfoot>
@@ -654,13 +646,7 @@
                                 </tr>
                             </tfoot>
                         </table>
-                        <div class="cabinet__actions">
-                            <button class="cabinet__btn is-primary" type="button">Банковская карта</button>
-                            <button class="cabinet__btn" type="button">Банковский перевод</button>
-                            <button class="cabinet__btn" type="button">PayPal</button>
-                        </div>
                     </aside>
-                </div>
             </div>
         </div>
     </div>

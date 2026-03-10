@@ -72,7 +72,7 @@
     }
     .cabinet__metrics {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       margin-bottom: 14px;
     }
@@ -548,7 +548,6 @@
                         <a href="my-account-2.html">Адреса доставки</a>
                         <a href="my-account-favorites.html">Избранное</a>
                         <a href="my-account-settings.html">Настройки профиля</a>
-                        <a href="checkout.html">Мои оплаты</a>
                         <a href="login.html">Выйти</a>
                     </nav>
                 </aside>
@@ -557,19 +556,15 @@
                     <div class="cabinet__metrics">
                         <div class="cabinet__metric">
                             <div class="cabinet__metric-label">Всего заказов</div>
-                            <div class="cabinet__metric-value">24</div>
+                            <div class="cabinet__metric-value" id="account-total-orders">0</div>
                         </div>
                         <div class="cabinet__metric">
                             <div class="cabinet__metric-label">Активные</div>
-                            <div class="cabinet__metric-value">3</div>
+                            <div class="cabinet__metric-value" id="account-active-orders">0</div>
                         </div>
                         <div class="cabinet__metric">
                             <div class="cabinet__metric-label">Избранные товары</div>
                             <div class="cabinet__metric-value">12</div>
-                        </div>
-                        <div class="cabinet__metric">
-                            <div class="cabinet__metric-label">Сумма покупок</div>
-                            <div class="cabinet__metric-value">₽148 900</div>
                         </div>
                     </div>
 
@@ -579,7 +574,6 @@
                             <div class="cabinet__row"><span class="cabinet__label">Получатель</span><span class="cabinet__value">Никита Алехин</span></div>
                             <div class="cabinet__row"><span class="cabinet__label">Телефон</span><span class="cabinet__value">+7 (999) 123-45-67</span></div>
                             <div class="cabinet__row"><span class="cabinet__label">Адрес</span><span class="cabinet__value">г. Москва, ул. Орджоникидзе, 11с1</span></div>
-                            <div class="cabinet__row"><span class="cabinet__label">Комментарий</span><span class="cabinet__value">Доставка с 10:00 до 18:00</span></div>
                         </section>
 
                         
@@ -593,43 +587,15 @@
                                     <tr>
                                         <th>Заказ</th>
                                         <th>Дата</th>
-                                        <th>Оплата</th>
-                                        <th>Доставка</th>
+                                        <th>Состав</th>
                                         <th>Итого</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>#7814</td>
-                                        <td>11 февраля 2026</td>
-                                        <td><span class="cabinet__badge is-paid">Оплачено</span></td>
-                                        <td><span class="cabinet__badge is-progress">В пути</span></td>
-                                        <td>₽24 700</td>
-                                    </tr>
-                                    <tr>
-                                        <td>#7792</td>
-                                        <td>2 февраля 2026</td>
-                                        <td><span class="cabinet__badge is-paid">Оплачено</span></td>
-                                        <td><span class="cabinet__badge is-done">Доставлен</span></td>
-                                        <td>₽18 300</td>
-                                    </tr>
-                                    <tr>
-                                        <td>#7726</td>
-                                        <td>25 января 2026</td>
-                                        <td><span class="cabinet__badge is-paid">Оплачено</span></td>
-                                        <td><span class="cabinet__badge is-done">Доставлен</span></td>
-                                        <td>₽31 200</td>
-                                    </tr>
-                                    <tr>
-                                        <td>#7681</td>
-                                        <td>10 января 2026</td>
-                                        <td><span class="cabinet__badge is-paid">Оплачено</span></td>
-                                        <td><span class="cabinet__badge is-done">Доставлен</span></td>
-                                        <td>₽9 800</td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="account-orders-body"></tbody>
                             </table>
                         </div>
+                        <div id="account-order-details" class="cabinet__card" style="display:none; margin-top:12px;"></div>
                     </section>
                 </div>
             </div>
