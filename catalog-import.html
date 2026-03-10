@@ -146,8 +146,12 @@
           badge: qty > 0 ? 'В наличии' : 'Под заказ',
           image: image,
           image2: image,
-          url: baseSlug ? ('product-' + baseSlug + '.html') : 'shop.html',
-          description: [description, about, specs].filter(Boolean).join('. ')
+          url: sku ? ('product.html?sku=' + encodeURIComponent(sku)) : 'shop.html',
+          description: [description, about, specs].filter(Boolean).join('. '),
+          model: model,
+          about: about,
+          specs: specs,
+          stock: qty
         };
       }
 
@@ -170,8 +174,12 @@
           badge: 'Комплект',
           image: image,
           image2: image,
-          url: baseSlug ? ('product-' + baseSlug + '.html') : 'shop.html',
-          description: description
+          url: sku ? ('product.html?sku=' + encodeURIComponent(sku)) : 'shop.html',
+          description: description,
+          model: '',
+          about: description,
+          specs: '',
+          stock: 0
         };
       }
 

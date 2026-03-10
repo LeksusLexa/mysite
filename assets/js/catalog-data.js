@@ -173,12 +173,17 @@
     });
   }
 
+  function productLink(product) {
+    if (product && product.url) return product.url;
+    if (product && product.sku) return 'product.html?sku=' + encodeURIComponent(product.sku);
+    return 'shop.html';
+  }
   function buildActionButtons(product) {
     var pid = escapeHtml(productId(product));
     var name = escapeHtml(product.name);
     var category = escapeHtml(product.category || 'Без категории');
     var price = escapeHtml(String(Number(product.price) || 0));
-    var url = escapeHtml(product.url || 'shop.html');
+    var url = escapeHtml(productLink(product));
     var img = escapeHtml(product.image || DEFAULT_IMAGE);
 
     return [
@@ -211,7 +216,7 @@
     var id = escapeHtml(productId(product));
     var name = escapeHtml(product.name);
     var category = escapeHtml(product.category || 'Без категории');
-    var url = escapeHtml(product.url || 'shop.html');
+    var url = escapeHtml(productLink(product));
     var description = escapeHtml(product.description || 'Описание товара будет заполнено после импорта каталога.');
     var image = escapeHtml(product.image || DEFAULT_IMAGE);
     var image2 = escapeHtml(product.image2 || product.image || DEFAULT_IMAGE);
@@ -243,7 +248,7 @@
     var id = escapeHtml(productId(product));
     var name = escapeHtml(product.name);
     var category = escapeHtml(product.category || 'Без категории');
-    var url = escapeHtml(product.url || 'shop.html');
+    var url = escapeHtml(productLink(product));
     var description = escapeHtml(product.description || 'Описание товара будет заполнено после импорта каталога.');
     var image = escapeHtml(product.image || DEFAULT_IMAGE);
     var image2 = escapeHtml(product.image2 || product.image || DEFAULT_IMAGE);
