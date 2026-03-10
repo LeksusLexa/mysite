@@ -910,7 +910,7 @@ newsletterPopup();
         currency: "RUB",
         maximumFractionDigits: 0,
       }).format(value);
-    } catch {
+    } catch (e) {
       return `₽${Math.round(value)}`;
     }
   };
@@ -946,7 +946,7 @@ newsletterPopup();
       const raw = localStorage.getItem(key);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (e) {
       return [];
     }
   };
@@ -1245,7 +1245,7 @@ newsletterPopup();
         currency: "RUB",
         maximumFractionDigits: 0,
       }).format(value);
-    } catch {
+    } catch (e) {
       return `₽${Math.round(value)}`;
     }
   };
@@ -1266,7 +1266,7 @@ newsletterPopup();
         month: "long",
         year: "numeric",
       }).format(date);
-    } catch {
+    } catch (e) {
       return date.toLocaleDateString("ru-RU");
     }
   };
@@ -1276,7 +1276,7 @@ newsletterPopup();
       const raw = localStorage.getItem(ORDERS_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (e) {
       return [];
     }
   };
@@ -1284,7 +1284,7 @@ newsletterPopup();
   const saveOrders = (orders) => {
     try {
       localStorage.setItem(ORDERS_KEY, JSON.stringify(Array.isArray(orders) ? orders : []));
-    } catch {}
+    } catch (e) {}
   };
 
   const ensureOrders = () => {
@@ -1407,7 +1407,7 @@ newsletterPopup();
     areas.forEach((area) => {
       const widgets = Array.from(area.querySelectorAll(":scope > .single__widget"));
       widgets.forEach((widget) => {
-        const title = (widget.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
+        const title = (((widget.querySelector(".widget__title") || {}).textContent) || "").trim().toLowerCase();
         const keep = allowed.includes(title);
         widget.style.display = keep ? "" : "none";
       });
@@ -1415,8 +1415,8 @@ newsletterPopup();
       const ordered = widgets
         .filter((widget) => widget.style.display !== "none")
         .sort((a, b) => {
-          const aTitle = (a.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
-          const bTitle = (b.querySelector(".widget__title")?.textContent || "").trim().toLowerCase();
+          const aTitle = (((a.querySelector(".widget__title") || {}).textContent) || "").trim().toLowerCase();
+          const bTitle = (((b.querySelector(".widget__title") || {}).textContent) || "").trim().toLowerCase();
           return allowed.indexOf(aTitle) - allowed.indexOf(bTitle);
         });
 
@@ -1549,7 +1549,7 @@ newsletterPopup();
     };
 
     const syncMethodState = () => {
-      const method = methodInputs.find((input) => input.checked)?.value || "pickup";
+      const method = ((methodInputs.find((input) => input.checked) || {}).value) || "pickup";
       const isDelivery = method === "delivery";
 
       if (deliveryFields) deliveryFields.style.display = isDelivery ? "block" : "none";
@@ -1567,14 +1567,14 @@ newsletterPopup();
         return;
       }
 
-      const deliveryType = methodInputs.find((input) => input.checked)?.value || "pickup";
-      const email = document.getElementById("checkout-email")?.value.trim() || "";
-      const phone = document.getElementById("checkout-phone")?.value.trim() || "";
-      const firstName = document.getElementById("input1")?.value.trim() || "";
-      const lastName = document.getElementById("input2")?.value.trim() || "";
-      const company = document.getElementById("input3")?.value.trim() || "";
-      const deliveryAddress = document.getElementById("input4")?.value.trim() || "";
-      const selectedAddress = addressSelect?.value === "new" ? customAddressInput?.value.trim() || "" : addressSelect?.value || "";
+      const deliveryType = ((methodInputs.find((input) => input.checked) || {}).value) || "pickup";
+      const email = ((((document.getElementById("checkout-email") || {}).value) || "").trim()) || "";
+      const phone = ((((document.getElementById("checkout-phone") || {}).value) || "").trim()) || "";
+      const firstName = ((((document.getElementById("input1") || {}).value) || "").trim()) || "";
+      const lastName = ((((document.getElementById("input2") || {}).value) || "").trim()) || "";
+      const company = ((((document.getElementById("input3") || {}).value) || "").trim()) || "";
+      const deliveryAddress = ((((document.getElementById("input4") || {}).value) || "").trim()) || "";
+      const selectedAddress = (((addressSelect || {}).value) === "new" ? ((((customAddressInput || {}).value) || "").trim()) || "" : ((addressSelect || {}).value) || "");
 
       if (!email || !phone) {
         window.alert("Заполните Email и номер.");
@@ -1673,7 +1673,7 @@ newsletterPopup();
       const raw = localStorage.getItem(COMPARE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (e) {
       return [];
     }
   };
@@ -1681,7 +1681,7 @@ newsletterPopup();
   const save = (list) => {
     try {
       localStorage.setItem(COMPARE_KEY, JSON.stringify(list || []));
-    } catch {}
+    } catch (e) {}
   };
 
   const itemId = (item) =>
@@ -1933,7 +1933,7 @@ ${tail}`;
       const raw = localStorage.getItem(WISHLIST_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (e) {
       return [];
     }
   };
@@ -1941,7 +1941,7 @@ ${tail}`;
   const saveWishlist = (list) => {
     try {
       localStorage.setItem(WISHLIST_KEY, JSON.stringify(list || []));
-    } catch {}
+    } catch (e) {}
   };
 
   const wishlistItemId = (item) =>
@@ -2186,88 +2186,71 @@ ${tail}`;
     },
   ];
 
-  const hasAnyTarget = configs.some(
-    (cfg) => document.querySelectorAll(cfg.inputSelector).length > 0
-  );
+  const hasAnyTarget = configs.some((cfg) => document.querySelectorAll(cfg.inputSelector).length > 0);
   if (!hasAnyTarget) return;
 
   const fallbackProducts = [
-    { title: "Комнатная DVB-T2 антенна", price: "245", img: "assets/img/product/product1.webp", link: "shop.html" },
-    { title: "Наружная антенна LTE/4G MIMO", price: "245", img: "assets/img/product/product3.webp", link: "shop.html" },
-    { title: "Спутниковая антенна 0,9 м", price: "245", img: "assets/img/product/product5.webp", link: "shop.html" },
-    { title: "Репитер GSM 900/1800", price: "278", img: "assets/img/product/product2.webp", link: "shop.html" },
-    { title: "Усилитель сигнала 3G/4G", price: "220", img: "assets/img/product/product4.webp", link: "shop.html" },
-    { title: "Антенна для интернета 4G", price: "249", img: "assets/img/product/product6.webp", link: "shop.html" },
+    { sku: 'ANT-001', title: 'Комнатная DVB-T2 антенна', price: '245', img: 'assets/img/product/product1.webp', link: 'product.html?sku=ANT-001' },
+    { sku: 'ANT-002', title: 'Наружная антенна LTE/4G MIMO', price: '12490', img: 'assets/img/product/product3.webp', link: 'product.html?sku=ANT-002' },
+    { sku: 'REP-003', title: 'Репитер LTE/GSM для дома', price: '18200', img: 'assets/img/product/product5.webp', link: 'product.html?sku=REP-003' },
   ];
 
   const normalize = (text) =>
-    String(text || "")
+    String(text || '')
       .toLowerCase()
-      .replace(/ё/g, "е")
-      .replace(/\s+/g, " ")
+      .replace(/ё/g, 'е')
+      .replace(/\s+/g, ' ')
       .trim();
 
   const escapeHtml = (text) =>
-    String(text || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
   const parsePrice = (text) => {
-    const raw = String(text || "").replace(/\u00a0/g, " ");
+    const raw = String(text || '').replace(/ /g, ' ');
     const match = raw.match(/[-+]?[0-9][0-9\s.,]*/);
-    if (!match) return "";
-    return match[0].replace(/[^\d]/g, "");
-  };
-
-  const collectPageProducts = () => {
-    const rows = [];
-    document.querySelectorAll("article.product__card").forEach((card) => {
-      const titleEl =
-        card.querySelector(".product__card--title a") ||
-        card.querySelector(".product__card--title");
-      const title = titleEl ? titleEl.textContent.trim() : "";
-      if (!title) return;
-
-      const priceEl =
-        card.querySelector(".current__price") ||
-        card.querySelector(".product__card--price .current__price");
-      const imgEl =
-        card.querySelector("img.product__primary--img") ||
-        card.querySelector(".product__card--thumbnail img");
-      const linkEl =
-        card.querySelector(".product__card--title a") ||
-        card.querySelector(".product__card--thumbnail__link");
-
-      rows.push({
-        title: title,
-        price: parsePrice(priceEl ? priceEl.textContent : ""),
-        img: imgEl ? imgEl.getAttribute("src") : "assets/img/product/product1.webp",
-        link: linkEl ? linkEl.getAttribute("href") || "shop.html" : "shop.html",
-      });
-    });
-    return rows;
+    if (!match) return '';
+    return match[0].replace(/[^\d]/g, '');
   };
 
   const dedupeProducts = (items) => {
     const seen = new Set();
     return items.filter((item) => {
-      const key = normalize(item.title);
+      const key = normalize(item.sku || item.title);
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     });
   };
 
-  const allProducts = dedupeProducts(
-    collectPageProducts().concat(fallbackProducts)
-  );
-  if (!allProducts.length) return;
+  const collectPageProducts = () => {
+    const rows = [];
+    document.querySelectorAll('article.product__card').forEach((card) => {
+      const titleEl = card.querySelector('.product__card--title a') || card.querySelector('.product__card--title');
+      const title = titleEl ? titleEl.textContent.trim() : '';
+      if (!title) return;
+      const priceEl = card.querySelector('.current__price') || card.querySelector('.product__card--price .current__price');
+      const imgEl = card.querySelector('img.product__primary--img') || card.querySelector('.product__card--thumbnail img');
+      const linkEl = card.querySelector('.product__card--title a') || card.querySelector('.product__card--thumbnail__link');
+      rows.push({
+        sku: card.dataset.catalogId || title,
+        title,
+        price: parsePrice(priceEl ? priceEl.textContent : ''),
+        img: imgEl ? imgEl.getAttribute('src') : 'assets/img/product/product1.webp',
+        link: linkEl ? linkEl.getAttribute('href') || 'shop.html' : 'shop.html',
+      });
+    });
+    return rows;
+  };
+
+  const productSearchUrl = (query) => `shop.html?query=${encodeURIComponent(String(query || '').trim())}`;
 
   const highlightTitle = (title, query, useHighlight) => {
-    const cleanTitle = String(title || "");
+    const cleanTitle = String(title || '');
     if (!useHighlight) return escapeHtml(cleanTitle);
     const q = normalize(query);
     if (!q) return escapeHtml(cleanTitle);
@@ -2279,99 +2262,98 @@ ${tail}`;
     return `${escapeHtml(start)}<mark>${escapeHtml(mid)}</mark>${escapeHtml(end)}`;
   };
 
-  const searchProducts = (query, maxResults) => {
-    const q = normalize(query);
-    if (q.length < 2) return [];
-    return allProducts
-      .filter((item) => normalize(item.title).includes(q))
-      .slice(0, maxResults || 4);
-  };
-
   const ensureStyles = (cfg) => {
     if (document.getElementById(cfg.styleId)) return;
-    const style = document.createElement("style");
+    const style = document.createElement('style');
     style.id = cfg.styleId;
-    style.textContent =
-      cfg.extraCss +
-      `.${cfg.itemClass}{animation:${cfg.revealAnim} .25s ease forwards;}` +
-      `@keyframes ${cfg.revealAnim}{to{opacity:1;transform:translateY(0) scale(1);}}`;
+    style.textContent = cfg.extraCss + `.${cfg.itemClass}{animation:${cfg.revealAnim} .25s ease forwards;}` + `@keyframes ${cfg.revealAnim}{to{opacity:1;transform:translateY(0) scale(1);}}`;
     document.head.appendChild(style);
   };
 
-  configs.forEach((cfg) => {
-    const inputs = document.querySelectorAll(cfg.inputSelector);
-    if (!inputs.length) return;
-    ensureStyles(cfg);
+  const initSearch = (allProducts) => {
+    const searchProducts = (query, maxResults) => {
+      const q = normalize(query);
+      if (q.length < 2) return [];
+      return allProducts.filter((item) => normalize(item.title).includes(q)).slice(0, maxResults || 4);
+    };
 
-    inputs.forEach((input) => {
-      const form = input.closest(cfg.formSelector);
-      if (!form || form.dataset[cfg.boundKey] === "1") return;
-      form.dataset[cfg.boundKey] = "1";
+    configs.forEach((cfg) => {
+      const inputs = document.querySelectorAll(cfg.inputSelector);
+      if (!inputs.length) return;
+      ensureStyles(cfg);
 
-      const panel = document.createElement("div");
-      panel.className = cfg.panelClass;
-      form.appendChild(panel);
+      inputs.forEach((input) => {
+        const form = input.closest(cfg.formSelector);
+        if (!form || form.dataset[cfg.boundKey] === '1') return;
+        form.dataset[cfg.boundKey] = '1';
 
-      let lastResults = [];
+        const panel = document.createElement('div');
+        panel.className = cfg.panelClass;
+        form.appendChild(panel);
 
-      const renderPanel = (query) => {
-        const results = searchProducts(query, cfg.maxResults);
-        lastResults = results;
+        let lastResults = [];
 
-        if (!results.length) {
-          panel.innerHTML =
-            normalize(query).length >= 2
-              ? `<div class="${cfg.emptyClass}">${cfg.notFoundText}</div>`
-              : "";
-          panel.classList.toggle("active", normalize(query).length >= 2);
-          return;
-        }
-
-        panel.innerHTML = results
-          .map((item, index) => {
+        const renderPanel = (query) => {
+          const results = searchProducts(query, cfg.maxResults);
+          lastResults = results;
+          if (!results.length) {
+            panel.innerHTML = normalize(query).length >= 2 ? `<div class="${cfg.emptyClass}">${cfg.notFoundText}</div>` : '';
+            panel.classList.toggle('active', normalize(query).length >= 2);
+            return;
+          }
+          panel.innerHTML = results.map((item, index) => {
             const titleHtml = highlightTitle(item.title, query, cfg.highlightTitle);
-            return (
-              `<a class="${cfg.itemClass}" href="${escapeHtml(item.link || "shop.html")}" style="animation-delay:${index * 50}ms">` +
-                `<img class="${cfg.imgClass}" src="${escapeHtml(item.img || "assets/img/product/product1.webp")}" alt="product">` +
-                "<span>" +
-                  `<span class="${cfg.titleClass}">${titleHtml}</span>` +
-                  `<span class="${cfg.priceClass}">${item.price ? item.price + " ₽" : ""}</span>` +
-                "</span>" +
-              "</a>"
-            );
-          })
-          .join("");
-        panel.classList.add("active");
-      };
+            return (`<a class="${cfg.itemClass}" href="${escapeHtml(item.link || productSearchUrl(query))}" style="animation-delay:${index * 50}ms">` +
+              `<img class="${cfg.imgClass}" src="${escapeHtml(item.img || 'assets/img/product/product1.webp')}" alt="product">` +
+              '<span>' +
+              `<span class="${cfg.titleClass}">${titleHtml}</span>` +
+              `<span class="${cfg.priceClass}">${item.price ? item.price + ' ₽' : ''}</span>` +
+              '</span>' +
+              '</a>');
+          }).join('');
+          panel.classList.add('active');
+        };
 
-      input.addEventListener("input", () => renderPanel(input.value));
-      input.addEventListener("focus", () => {
-        if (normalize(input.value).length >= 2) renderPanel(input.value);
-      });
+        input.addEventListener('input', () => renderPanel(input.value));
+        input.addEventListener('focus', () => {
+          if (normalize(input.value).length >= 2) renderPanel(input.value);
+        });
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const results = searchProducts(input.value, cfg.maxResults);
-        if (results.length) {
-          window.location.href = results[0].link || "shop.html";
-        } else {
-          renderPanel(input.value);
-        }
-      });
-
-      panel.addEventListener("click", () => panel.classList.remove("active"));
-
-      document.addEventListener("click", (e) => {
-        if (!form.contains(e.target)) panel.classList.remove("active");
-      });
-
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") panel.classList.remove("active");
-        if (e.key === "Enter" && lastResults.length) {
+        form.addEventListener('submit', (e) => {
           e.preventDefault();
-          window.location.href = lastResults[0].link || "shop.html";
-        }
+          const query = String(input.value || '').trim();
+          if (!query) return;
+          window.location.href = productSearchUrl(query);
+        });
+
+        panel.addEventListener('click', () => panel.classList.remove('active'));
+        document.addEventListener('click', (e) => { if (!form.contains(e.target)) panel.classList.remove('active'); });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') panel.classList.remove('active');
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = String(input.value || '').trim();
+            if (!query) return;
+            window.location.href = productSearchUrl(query);
+          }
+        });
       });
     });
-  });
+  };
+
+  fetch('assets/data/products.json')
+    .then((response) => response.ok ? response.json() : [])
+    .then((products) => {
+      const normalized = Array.isArray(products) ? products.map((item) => ({
+        sku: item.sku || '',
+        title: item.name || item.title || '',
+        price: parsePrice(item.price),
+        img: item.image || 'assets/img/product/product1.webp',
+        link: item.url || (item.sku ? `product.html?sku=${encodeURIComponent(item.sku)}` : 'shop.html'),
+      })) : [];
+      initSearch(dedupeProducts(normalized.concat(collectPageProducts(), fallbackProducts)));
+    })
+    .catch(() => {
+      initSearch(dedupeProducts(collectPageProducts().concat(fallbackProducts)));
+    });
 })();

@@ -1616,6 +1616,21 @@
     return wrap;
   }
 
+  function getQueryFromUrl(){
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      return params.get('query') || '';
+    } catch(e){
+      return '';
+    }
+  }
+
+  function applyUrlQueryToInputs(){
+    var query = getQueryFromUrl();
+    if(!query) return;
+    qsa('.widget__search--form__input').forEach(function(inp){ inp.value = query; });
+  }
+
   function getState(){
     var queryInputs = [
       qs('.shop__sidebar--widget .widget__search--form__input'),
@@ -1768,6 +1783,8 @@
 
     // Bind after injection
     bindUI(products);
+
+    applyUrlQueryToInputs();
 
     // initial apply
     applyFilters(products);
