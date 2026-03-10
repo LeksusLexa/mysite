@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Импорт каталога</title>
+  <link rel="stylesheet" href="assets/css/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.min.css">
+  <style>
+    .catalog-import { padding: 80px 0; background: linear-gradient(180deg, #f5f7fb 0%, #eef2f8 100%); min-height: 100vh; }
+    .catalog-import__card { background: #fff; border-radius: 24px; padding: 32px; box-shadow: 0 24px 70px rgba(20, 37, 63, 0.08); }
+    .catalog-import__drop { border: 2px dashed #c9d5e7; border-radius: 18px; padding: 28px; background: #f9fbff; }
+    .catalog-import__drop input { margin-top: 12px; }
+    .catalog-import__meta { font-size: 14px; color: #5f6b7a; }
+    .catalog-import__preview { max-height: 420px; overflow: auto; border: 1px solid #e7edf5; border-radius: 16px; }
+    .catalog-import__preview table { margin: 0; }
+    .catalog-import__hint code { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <main class="catalog-import">
+    <div class="container">
+      <div class="catalog-import__card">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-4 mb-4">
+          <div>
+            <h1 class="mb-3">Импорт товаров из Excel</h1>
+            <p class="mb-2">Эта страница нужна для GitHub Pages: клиент заполняет Excel, ты открываешь файл здесь и скачиваешь новый <code>products.json</code>.</p>
+            <p class="catalog-import__meta mb-0">Поддерживаются <code>.xlsx</code>, <code>.xls</code> и <code>.csv</code>. Данные не отправляются на сервер, обработка идет в браузере.</p>
+          </div>
+          <div class="catalog-import__hint">
+            <div class="mb-2"><strong>Обязательные поля:</strong></div>
+            <div><code>sku</code>, <code>name</code>, <code>category</code>, <code>price</code>, <code>image</code>, <code>url</code></div>
+          </div>
+        </div>
+
+        <div class="catalog-import__drop mb-4">
+          <label class="form-label fw-semibold" for="catalog-file">Выбери файл каталога</label>
+          <input class="form-control" id="catalog-file" type="file" accept=".xlsx,.xls,.csv">
+        </div>
+
+        <div class="d-flex flex-column flex-lg-row gap-3 align-items-start align-items-lg-center mb-4">
+          <button class="primary__btn" id="download-json" type="button" disabled>Скачать products.json</button>
+          <span class="catalog-import__meta" id="catalog-status">Файл пока не загружен.</span>
+        </div>
+
+        <div class="catalog-import__preview">
+          <table class="table table-striped align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Артикул</th>
+                <th>Название</th>
+                <th>Категория</th>
+                <th>Цена</th>
+                <th>Ссылка</th>
+              </tr>
+            </thead>
+            <tbody id="catalog-preview-body">
+              <tr>
+                <td colspan="5" class="text-center py-4">После загрузки файла здесь появятся товары.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    (function () {
+      var fileInput = document.getElementById('catalog-file');
+      var downloadBtn = document.getElementById('download-json');
+      var statusNode = document.getElementById('catalog-status');
+      var previewBody = document.getElementById('catalog-preview-body');
+      var currentProducts = [];
+
+      function normalizeHeader(header) {
+        return String(header || '')
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '_')
+          .replace(/[()]/g, '')
+          .replace(/[.-]/g, '_');
+      }
+
+      function slugify(value) {
+        var map = {
+          'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'
+        };
+        return String(value || '')
+          .toLowerCase()
+          .split('')
+          .map(function (char) { return map[char] !== undefined ? map[char] : char; })
+          .join('')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .replace(/-{2,}/g, '-');
+      }
+
+      function toNumber(value) {
+        var digits = String(value || '').replace(/[^\d.,]/g, '').replace(',', '.');
+        var parsed = parseFloat(digits);
+        return isFinite(parsed) ? Math.round(parsed) : 0;
+      }
+
+      function pick(row, keys) {
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
+            return String(row[key]).trim();
+          }
+        }
+        return '';
+      }
+
+      function normalizeRows(rows) {
+        return rows.map(function (row) {
+          var out = {};
+          Object.keys(row).forEach(function (key) {
+            out[normalizeHeader(key)] = row[key];
+          });
+          return out;
+        });
+      }
+
+      function mapProductRow(row) {
+        var sku = pick(row, ['sku', 'article', 'artikul', 'артикул']);
+        var category = pick(row, ['category', 'kategoriya', 'категория']);
+        var name = pick(row, ['name', 'title', 'nazvanie', 'название_товара', 'название']);
+        var model = pick(row, ['model', 'модель']);
+        var description = pick(row, ['description', 'opisanie', 'описание']);
+        var about = pick(row, ['о_товаре', 'about', 'about_product']);
+        var specs = pick(row, ['характеристики', 'specs', 'specifications']);
+        var image = pick(row, ['фото_url', 'photo_url', 'image', 'img', 'изображение']);
+        var price = toNumber(pick(row, ['price', 'цена']));
+        var qty = toNumber(pick(row, ['количество_на_складе', 'stock', 'quantity']));
+        var baseSlug = slugify(model || name || sku);
+
+        return {
+          sku: sku,
+          name: name,
+          slug: baseSlug || slugify(sku),
+          category: category,
+          price: price,
+          oldPrice: 0,
+          badge: qty > 0 ? 'В наличии' : 'Под заказ',
+          image: image,
+          image2: image,
+          url: baseSlug ? ('product-' + baseSlug + '.html') : 'shop.html',
+          description: [description, about, specs].filter(Boolean).join('. ')
+        };
+      }
+
+      function mapKitRow(row) {
+        var sku = pick(row, ['артикул_комплекта', 'sku', 'article']);
+        var category = pick(row, ['category', 'категория']);
+        var name = pick(row, ['название_комплекта', 'name', 'title']);
+        var description = pick(row, ['description', 'описание']);
+        var image = pick(row, ['фото_url', 'photo_url', 'image', 'img', 'изображение']);
+        var price = toNumber(pick(row, ['цена_комплекта', 'price', 'цена']));
+        var baseSlug = slugify(name || sku);
+
+        return {
+          sku: sku,
+          name: name,
+          slug: baseSlug || slugify(sku),
+          category: category,
+          price: price,
+          oldPrice: 0,
+          badge: 'Комплект',
+          image: image,
+          image2: image,
+          url: baseSlug ? ('product-' + baseSlug + '.html') : 'shop.html',
+          description: description
+        };
+      }
+
+      function validProduct(item) {
+        return item && item.sku && item.name && item.category && item.price;
+      }
+
+      function renderPreview(products) {
+        if (!products.length) {
+          previewBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Подходящих строк не найдено.</td></tr>';
+          return;
+        }
+        previewBody.innerHTML = products.map(function (item) {
+          return '<tr>' +
+            '<td>' + (item.sku || '—') + '</td>' +
+            '<td>' + (item.name || '—') + '</td>' +
+            '<td>' + (item.category || '—') + '</td>' +
+            '<td>' + (item.price ? item.price.toLocaleString('ru-RU') + ' ₽' : '—') + '</td>' +
+            '<td>' + (item.url || '—') + '</td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      function handleWorkbook(workbook) {
+        var allProducts = [];
+        var diagnostics = [];
+
+        workbook.SheetNames.forEach(function (sheetName) {
+          var sheet = workbook.Sheets[sheetName];
+          var rows = normalizeRows(XLSX.utils.sheet_to_json(sheet, { defval: '' }));
+          if (!rows.length) return;
+
+          if (sheetName.toLowerCase() === 'товары') {
+            var mappedProducts = rows.map(mapProductRow).filter(validProduct);
+            allProducts = allProducts.concat(mappedProducts);
+            diagnostics.push('Товары: ' + mappedProducts.length);
+            return;
+          }
+
+          if (sheetName.toLowerCase() === 'комплекты') {
+            var mappedKits = rows.map(mapKitRow).filter(validProduct);
+            allProducts = allProducts.concat(mappedKits);
+            diagnostics.push('Комплекты: ' + mappedKits.length);
+          }
+        });
+
+        currentProducts = allProducts;
+        renderPreview(currentProducts);
+        downloadBtn.disabled = !currentProducts.length;
+        statusNode.textContent = currentProducts.length
+          ? ('Готово: ' + diagnostics.join(', ') + '. Скачай новый products.json и замени файл assets/data/products.json.')
+          : 'Не удалось собрать товары. Сейчас импорт настроен под листы «Товары» и «Комплекты» из твоего шаблона.';
+      }
+
+      fileInput.addEventListener('change', function (event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) return;
+        statusNode.textContent = 'Читаю файл...';
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var data = e.target.result;
+          var workbook = XLSX.read(data, { type: 'array' });
+          handleWorkbook(workbook);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      downloadBtn.addEventListener('click', function () {
+        if (!currentProducts.length) return;
+        var blob = new Blob([JSON.stringify(currentProducts, null, 2)], { type: 'application/json' });
+        var objectUrl = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = 'products.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+      });
+    })();
+  </script></script>
+</body>
+</html>

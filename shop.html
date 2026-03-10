@@ -1095,7 +1095,7 @@
                         </div>
                         <div class="shop__product--wrapper">
                             <div class="tab_content">
-                                <div id="product_grid" class="tab_pane active show">
+                                <div id="product_grid" class="tab_pane active show" data-catalog-source="assets/data/products.json" data-catalog-mode="grid">
                                     <div class="product__section--inner product__grid--inner">
                                         <div class="row row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-2 mb--n30">
                                             <div class="col custom-col-2 mb-30">
@@ -1539,7 +1539,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="product_list" class="tab_pane">
+                                <div id="product_list" class="tab_pane" data-catalog-source="assets/data/products.json" data-catalog-mode="list">
                                     <div class="product__section--inner">
                                         <div class="row row-cols-1 mb--n30">
                                             <div class="col mb-30">
@@ -2363,6 +2363,7 @@
 
   <!-- Customscript js -->
   <script src="assets/js/script.js" defer="defer"></script>
+  <script src="assets/js/catalog-data.js" defer="defer"></script>
   
 
 <script>
@@ -2404,8 +2405,8 @@
   }
 
   function collectProducts(){
-    var grid = qs('#product_grid') || qs('.shop__product--wrapper') || document;
-    var cards = qsa('article.product__card', grid);
+    var containers = qsa('#product_grid article.product__card, #product_list article.product__card');
+    var cards = containers.length ? containers : qsa('article.product__card', qs('.shop__product--wrapper') || document);
 
     return cards.map(function(card){
       var titleEl = qs('.product__card--title a, .product__card--title, h3 a, h3', card);
@@ -2421,7 +2422,7 @@
       // indexable text
       card.dataset.search = norm(title);
 
-      return {el: card, title: title, category: cat, price: price};
+      return {el: card, key: card.dataset.catalogId || title, title: title, category: cat, price: price};
     });
   }
 
@@ -2506,7 +2507,8 @@
 
   function applyFilters(products){
     var st = getState();
-    var shown = 0;
+    var shownKeys = [];
+    var totalKeys = [];
 
     products.forEach(function(p){
       var ok = true;
@@ -2532,13 +2534,15 @@
       }
 
       p.el.style.display = ok ? '' : 'none';
-      if(ok) shown++;
+      if(totalKeys.indexOf(p.key) === -1) totalKeys.push(p.key);
+      if(ok && shownKeys.indexOf(p.key) === -1) shownKeys.push(p.key);
     });
 
     var countEl = qs('.product__showing--count');
     if(countEl){
-      var total = products.length;
-      var start = total ? 1 : 0;
+      var total = totalKeys.length;
+      var shown = shownKeys.length;
+      var start = shown ? 1 : 0;
       var end = shown;
       countEl.textContent = shown ? ('Показано ' + start + '–' + end + ' из ' + total + ' товаров') : ('Ничего не найдено (0 из ' + total + ')');
     }
@@ -2805,7 +2809,10 @@
   }
 
 
-  if(document.readyState === 'loading'){
+  var dynamicCatalogRoot = qs('#product_grid[data-catalog-source]');
+  if(dynamicCatalogRoot){
+    document.addEventListener('catalog:rendered', init, { once: true });
+  } else if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();

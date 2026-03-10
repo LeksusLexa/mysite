@@ -1,0 +1,28 @@
+[
+  {
+    "sku": "ANT-001",
+    "name": "Внешняя LTE антенна 4G",
+    "slug": "ant-lte-17",
+    "category": "Антенны",
+    "price": 79,
+    "oldPrice": 0,
+    "badge": "В наличии",
+    "image": "https://example.com/images/antenna.jpg",
+    "image2": "https://example.com/images/antenna.jpg",
+    "url": "product-ant-lte-17.html",
+    "description": "Направленная антенна для усиления сигнала 4G. Подходит для установки на крышу или фасад. Частота: 1700–2700 МГц; Усиление: 17 dBi"
+  },
+  {
+    "sku": "KIT-001",
+    "name": "Комплект усиления сигнала 4G для дома",
+    "slug": "komplekt-usileniya-signala-4g-dlya-doma",
+    "category": "Комплекты усиления сигнала",
+    "price": 199,
+    "oldPrice": 0,
+    "badge": "Комплект",
+    "image": "https://example.com/images/lte-kit.jpg",
+    "image2": "https://example.com/images/lte-kit.jpg",
+    "url": "product-komplekt-usileniya-signala-4g-dlya-doma.html",
+    "description": "Готовый набор для усиления мобильной связи и интернета"
+  }
+]
