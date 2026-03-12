@@ -2396,10 +2396,12 @@ ${tail}`;
     };
 
     try {
+      const hostname = (window.location && window.location.hostname) || '';
+      const allowCms = !hostname || hostname === 'localhost' || hostname === '127.0.0.1';
       const configResponse = await fetch('assets/data/cms-config.json');
       if (!configResponse.ok) return await localFallback();
       const config = await configResponse.json();
-      if (!config || !config.enabled || !config.endpoint) return await localFallback();
+      if (!config || !config.enabled || !config.endpoint || !allowCms) return await localFallback();
 
       const headers = {};
       if (config.authToken) headers.Authorization = `Bearer ${config.authToken}`;

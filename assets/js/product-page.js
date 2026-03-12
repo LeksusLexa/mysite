@@ -83,7 +83,9 @@
         return response.json();
       })
       .then(function (config) {
-        if (!config || !config.enabled || !config.endpoint) return loadLocalFallback();
+        var hostname = (window.location && window.location.hostname) || '';
+        var allowCms = !hostname || hostname === 'localhost' || hostname === '127.0.0.1';
+        if (!config || !config.enabled || !config.endpoint || !allowCms) return loadLocalFallback();
 
         var headers = {};
         if (config.authToken) headers.Authorization = 'Bearer ' + config.authToken;
