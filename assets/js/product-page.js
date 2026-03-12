@@ -21,6 +21,94 @@
     return 'shop.html';
   }
 
+  function toNumber(value) {
+    var parsed = Number(String(value || '').replace(',', '.').replace(/[^\d.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function resolveImage(raw, imageBaseUrl) {
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw) || String(raw).indexOf('data:') === 0) return raw;
+    if (!imageBaseUrl) return raw;
+    return imageBaseUrl.replace(/\/$/, '') + '/' + String(raw).replace(/^\//, '');
+  }
+
+  function normalizeCmsItem(entry, imageBaseUrl) {
+    var attrs = entry && entry.attributes ? entry.attributes : entry;
+    var imageField = attrs && attrs.image && attrs.image.data && attrs.image.data.attributes
+      ? attrs.image.data.attributes.url
+      : (attrs ? attrs.image : '');
+    var image2Field = attrs && attrs.image2 && attrs.image2.data && attrs.image2.data.attributes
+      ? attrs.image2.data.attributes.url
+      : (attrs ? attrs.image2 : '');
+
+    var sku = String((attrs && (attrs.sku || attrs.article)) || (entry && entry.sku) || '').trim();
+    var name = String((attrs && (attrs.name || attrs.title)) || (entry && entry.name) || '').trim();
+    var category = String((attrs && attrs.category) || (entry && entry.category) || '').trim();
+
+    return {
+      sku: sku,
+      name: name,
+      slug: String((attrs && attrs.slug) || '').trim(),
+      category: category,
+      price: toNumber(attrs && attrs.price),
+      oldPrice: toNumber(attrs && attrs.oldPrice),
+      badge: String((attrs && attrs.badge) || '').trim(),
+      image: resolveImage(imageField, imageBaseUrl) || FALLBACK_PRODUCT_IMAGE,
+      image2: resolveImage(image2Field || imageField, imageBaseUrl) || FALLBACK_PRODUCT_IMAGE,
+      url: String((attrs && attrs.url) || '').trim() || (sku ? 'product.html?sku=' + encodeURIComponent(sku) : 'shop.html'),
+      description: String((attrs && attrs.description) || '').trim(),
+      model: String((attrs && attrs.model) || '').trim(),
+      about: String((attrs && attrs.about) || '').trim(),
+      specs: String((attrs && attrs.specs) || '').trim(),
+      stock: toNumber(attrs && attrs.stock)
+    };
+  }
+
+  function loadCatalogProductsStandalone() {
+    function loadLocalFallback() {
+      return fetch('assets/data/products.json')
+        .then(function (response) {
+          if (!response.ok) throw new Error('Не удалось загрузить каталог товаров');
+          return response.json();
+        })
+        .then(function (data) {
+          return Array.isArray(data) ? data : [];
+        });
+    }
+
+    return fetch('assets/data/cms-config.json')
+      .then(function (response) {
+        if (!response.ok) throw new Error('Не удалось загрузить конфиг CMS');
+        return response.json();
+      })
+      .then(function (config) {
+        if (!config || !config.enabled || !config.endpoint) return loadLocalFallback();
+
+        var headers = {};
+        if (config.authToken) headers.Authorization = 'Bearer ' + config.authToken;
+        return fetch(config.endpoint, { headers: headers })
+          .then(function (response) {
+            if (!response.ok) throw new Error('CMS endpoint failed');
+            return response.json();
+          })
+          .then(function (payload) {
+            var rows = Array.isArray(payload) ? payload : (Array.isArray(payload.data) ? payload.data : []);
+            return rows.map(function (entry) {
+              return normalizeCmsItem(entry, config.imageBaseUrl || '');
+            }).filter(function (item) {
+              return item.sku && item.name;
+            });
+          })
+          .catch(function () {
+            return loadLocalFallback();
+          });
+      })
+      .catch(function () {
+        return loadLocalFallback();
+      });
+  }
+
   var FALLBACK_PRODUCT_IMAGE = 'assets/img/product/product2.webp';
   var EMPTY_IMAGE =
     'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -667,16 +755,7 @@
 
   var loader = typeof window.loadCatalogProducts === 'function'
     ? window.loadCatalogProducts
-    : function () {
-        return fetch('assets/data/products.json')
-          .then(function (response) {
-            if (!response.ok) throw new Error('Не удалось загрузить каталог товаров');
-            return response.json();
-          })
-          .then(function (data) {
-            return Array.isArray(data) ? data : [];
-          });
-      };
+    : loadCatalogProductsStandalone;
 
   loader()
     .then(function (products) {
