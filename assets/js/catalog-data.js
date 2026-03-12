@@ -296,6 +296,43 @@
       node.textContent = total ? ('Показано 1–' + total + ' из ' + total + ' товаров') : 'Товаров пока нет';
     });
   }
+  function renderBestSellerWidgets(products) {
+    var widgets = qsa('.single__widget .widget__title, .single__widget.widget__bg .widget__title')
+      .filter(function (node) { return normalize(node.textContent).toLowerCase() === 'хиты продаж'; })
+      .map(function (node) { return node.closest('.single__widget'); })
+      .filter(Boolean);
+    if (!widgets.length) return;
+
+    var picks = (products || []).filter(function (item) { return !!item.is_bestseller; }).slice(0, 3);
+    if (!picks.length) {
+      picks = (products || []).slice(0, 3);
+    }
+
+    widgets.forEach(function (widget) {
+      var sidebar = qs('.product__sidebar', widget);
+      if (!sidebar) return;
+      sidebar.innerHTML = picks.map(function (product) {
+        var url = productLink(product);
+        var image = escapeHtml(product.image || DEFAULT_IMAGE);
+        var name = escapeHtml(product.name || 'Товар');
+        var currentPrice = escapeHtml(formatPrice(product.price));
+        var oldPrice = Number(product.oldPrice) ? '<span class="price__divided"></span><span class="old__price"> ' + escapeHtml(formatPrice(product.oldPrice)) + '</span>' : '';
+        return [
+          '<div class="small__product d-flex align-items-center mb-20">',
+          '<div class="small__product--thumbnail position__relative">',
+          '<a class="small__product--link display-block" href="', escapeHtml(url), '">',
+          '<img class="small__product--img display-block" src="', image, '" alt="', name, '">',
+          '</a>',
+          '</div>',
+          '<div class="small__product--content">',
+          '<h3 class="small__product--title h4"><a href="', escapeHtml(url), '">', name, '</a></h3>',
+          '<div class="small__product--price"><span class="current__price">', currentPrice, '</span>', oldPrice, '</div>',
+          '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+    });
+  }
   function initCatalog() {
     var roots = qsa('#product_grid[data-catalog-source], #product_list[data-catalog-source]');
     if (!roots.length) return;
@@ -325,6 +362,7 @@
         ensureQuickviewDelegation();
         syncWishlistButtons();
         updateCounters(products);
+        renderBestSellerWidgets(products);
         window.dispatchEvent(new Event('focus'));
         document.dispatchEvent(new CustomEvent('catalog:rendered', { detail: { products: products } }));
       })

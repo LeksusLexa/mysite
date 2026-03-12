@@ -2374,6 +2374,7 @@ ${tail}`;
       category,
       price,
       oldPrice: toNumber(attrs && attrs.oldPrice),
+      is_bestseller: Boolean(attrs && (attrs.is_bestseller || attrs.isBestseller || attrs.bestseller)),
       badge: String((attrs && attrs.badge) || '').trim(),
       image: resolveImage({ image: imageField }, imageBaseUrl),
       image2: resolveImage({ image: image2Field || imageField }, imageBaseUrl),
