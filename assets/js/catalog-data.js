@@ -296,6 +296,119 @@
       node.textContent = total ? ('Показано 1–' + total + ' из ' + total + ' товаров') : 'Товаров пока нет';
     });
   }
+  function updateCountersPaged(total, currentPage, perPage, visibleCount) {
+    qsa('.product__showing--count').forEach(function (node) {
+      if (!total) {
+        node.textContent = 'Товаров пока нет';
+        return;
+      }
+      var start = ((currentPage - 1) * perPage) + 1;
+      var end = start + visibleCount - 1;
+      node.textContent = 'Показано ' + start + '–' + end + ' из ' + total + ' товаров';
+    });
+  }
+  function cloneProducts(products) {
+    return (products || []).slice();
+  }
+  function getSortWeight(product) {
+    var score = 0;
+    if (product && product.is_bestseller) score += 1000;
+    if (product && product.badge && normalize(product.badge).toLowerCase().indexOf('хит') !== -1) score += 100;
+    score += Number(product && product.stock) || 0;
+    return score;
+  }
+  function sortProducts(products, sortKey) {
+    var list = cloneProducts(products);
+    if (sortKey === 'price-asc') {
+      return list.sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
+    }
+    if (sortKey === 'price-desc') {
+      return list.sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
+    }
+    if (sortKey === 'popular') {
+      return list.sort(function (a, b) {
+        var diff = getSortWeight(b) - getSortWeight(a);
+        if (diff) return diff;
+        return normalize(a.name).localeCompare(normalize(b.name), 'ru');
+      });
+    }
+    return list.reverse();
+  }
+  function renderPagination(state) {
+    var wrapper = qs('[data-catalog-pagination]');
+    if (!wrapper) return;
+    var totalPages = Math.max(1, Math.ceil(state.total / state.perPage));
+    if (totalPages <= 1) {
+      wrapper.innerHTML = '';
+      return;
+    }
+    var html = [];
+    html.push(
+      '<li class="pagination__list">' +
+      '<a href="#" class="pagination__item--arrow link' + (state.page <= 1 ? ' disabled' : '') + '" data-page-action="prev" aria-label="Предыдущая страница">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="22.51" height="20.443" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M244 400L100 256l144-144M120 256h292"/></svg>' +
+      '</a></li>'
+    );
+    for (var i = 1; i <= totalPages; i += 1) {
+      if (i === state.page) {
+        html.push('<li class="pagination__list"><span class="pagination__item pagination__item--current">' + i + '</span></li>');
+      } else {
+        html.push('<li class="pagination__list"><a href="#" class="pagination__item link" data-page="' + i + '">' + i + '</a></li>');
+      }
+    }
+    html.push(
+      '<li class="pagination__list">' +
+      '<a href="#" class="pagination__item--arrow link' + (state.page >= totalPages ? ' disabled' : '') + '" data-page-action="next" aria-label="Следующая страница">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" width="22.51" height="20.443" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M268 112l144 144-144 144M392 256H100"/></svg>' +
+      '</a></li>'
+    );
+    wrapper.innerHTML = html.join('');
+  }
+  function bindControls(state, renderCatalog) {
+    var pageSizeSelect = qs('[data-catalog-page-size]');
+    var sortSelect = qs('[data-catalog-sort]');
+    var pagination = qs('[data-catalog-pagination]');
+    if (pageSizeSelect && !pageSizeSelect.dataset.catalogBound) {
+      pageSizeSelect.dataset.catalogBound = '1';
+      pageSizeSelect.addEventListener('change', function () {
+        state.perPage = Math.max(1, parseInt(pageSizeSelect.value, 10) || 6);
+        state.page = 1;
+        renderCatalog();
+      });
+    }
+    if (sortSelect && !sortSelect.dataset.catalogBound) {
+      sortSelect.dataset.catalogBound = '1';
+      sortSelect.addEventListener('change', function () {
+        state.sort = sortSelect.value || 'newest';
+        state.page = 1;
+        renderCatalog();
+      });
+    }
+    if (pagination && !pagination.dataset.catalogBound) {
+      pagination.dataset.catalogBound = '1';
+      pagination.addEventListener('click', function (e) {
+        var link = e.target.closest('[data-page], [data-page-action]');
+        if (!link) return;
+        e.preventDefault();
+        var totalPages = Math.max(1, Math.ceil(state.total / state.perPage));
+        if (link.getAttribute('data-page-action') === 'prev' && state.page > 1) {
+          state.page -= 1;
+          renderCatalog();
+          return;
+        }
+        if (link.getAttribute('data-page-action') === 'next' && state.page < totalPages) {
+          state.page += 1;
+          renderCatalog();
+          return;
+        }
+        var page = parseInt(link.getAttribute('data-page'), 10);
+        if (page && page !== state.page) {
+          state.page = page;
+          renderCatalog();
+        }
+      });
+    }
+  }
   function renderBestSellerWidgets(products) {
     var widgets = qsa('.single__widget .widget__title, .single__widget.widget__bg .widget__title')
       .filter(function (node) { return normalize(node.textContent).toLowerCase() === 'хиты продаж'; })
@@ -355,16 +468,34 @@
     loader()
       .then(function (products) {
         products = Array.isArray(products) ? products : [];
-        roots.forEach(function (root) {
-          renderInto(root, products, root.getAttribute('data-catalog-mode') || 'grid');
-        });
-        ensureWishlistDelegation();
-        ensureQuickviewDelegation();
-        syncWishlistButtons();
-        updateCounters(products);
-        renderBestSellerWidgets(products);
-        window.dispatchEvent(new Event('focus'));
-        document.dispatchEvent(new CustomEvent('catalog:rendered', { detail: { products: products } }));
+        var state = {
+          all: products,
+          sort: ((qs('[data-catalog-sort]') || {}).value) || 'newest',
+          perPage: Math.max(1, parseInt(((qs('[data-catalog-page-size]') || {}).value) || '6', 10) || 6),
+          page: 1,
+          total: products.length
+        };
+        function renderCatalog() {
+          var sorted = sortProducts(state.all, state.sort);
+          state.total = sorted.length;
+          var totalPages = Math.max(1, Math.ceil(state.total / state.perPage));
+          if (state.page > totalPages) state.page = totalPages;
+          var start = (state.page - 1) * state.perPage;
+          var visible = sorted.slice(start, start + state.perPage);
+          roots.forEach(function (root) {
+            renderInto(root, visible, root.getAttribute('data-catalog-mode') || 'grid');
+          });
+          updateCountersPaged(state.total, state.page, state.perPage, visible.length);
+          renderPagination(state);
+          renderBestSellerWidgets(sorted);
+          ensureWishlistDelegation();
+          ensureQuickviewDelegation();
+          syncWishlistButtons();
+          window.dispatchEvent(new Event('focus'));
+          document.dispatchEvent(new CustomEvent('catalog:rendered', { detail: { products: visible, total: state.total, page: state.page } }));
+        }
+        bindControls(state, renderCatalog);
+        renderCatalog();
       })
       .catch(function (error) {
         console.error(error);
