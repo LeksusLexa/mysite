@@ -665,11 +665,20 @@
     return;
   }
 
-  fetch('assets/data/products.json')
-    .then(function (response) {
-      if (!response.ok) throw new Error('Не удалось загрузить каталог товаров');
-      return response.json();
-    })
+  var loader = typeof window.loadCatalogProducts === 'function'
+    ? window.loadCatalogProducts
+    : function () {
+        return fetch('assets/data/products.json')
+          .then(function (response) {
+            if (!response.ok) throw new Error('Не удалось загрузить каталог товаров');
+            return response.json();
+          })
+          .then(function (data) {
+            return Array.isArray(data) ? data : [];
+          });
+      };
+
+  loader()
     .then(function (products) {
       products = Array.isArray(products) ? products : [];
       var product = products.find(function (item) { return String(item.sku || '').trim() === sku; });
@@ -680,6 +689,6 @@
       renderProduct(product, products);
     })
     .catch(function () {
-      showState('Не удалось загрузить данные товара. Проверь файл assets/data/products.json.', true);
+      showState('Не удалось загрузить данные товара. Проверь assets/data/cms-config.json или assets/data/products.json.', true);
     });
 })();

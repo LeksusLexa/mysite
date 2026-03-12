@@ -2340,8 +2340,85 @@ ${tail}`;
     });
   };
 
-  fetch('assets/data/products.json')
-    .then((response) => response.ok ? response.json() : [])
+  const toNumber = (value) => {
+    const parsed = Number(String(value || '').replace(',', '.').replace(/[^\d.-]/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const resolveImage = (item, imageBaseUrl) => {
+    const raw = item && item.image ? item.image : '';
+    if (!raw) return 'assets/img/product/product1.webp';
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+    if (!imageBaseUrl) return raw;
+    return imageBaseUrl.replace(/\/$/, '') + '/' + String(raw).replace(/^\//, '');
+  };
+
+  const normalizeCmsItem = (entry, imageBaseUrl) => {
+    const attrs = entry && entry.attributes ? entry.attributes : entry;
+    const imageField = attrs && attrs.image && attrs.image.data && attrs.image.data.attributes
+      ? attrs.image.data.attributes.url
+      : (attrs ? attrs.image : '');
+    const image2Field = attrs && attrs.image2 && attrs.image2.data && attrs.image2.data.attributes
+      ? attrs.image2.data.attributes.url
+      : (attrs ? attrs.image2 : '');
+
+    const sku = String((attrs && (attrs.sku || attrs.article)) || (entry && entry.sku) || '').trim();
+    const name = String((attrs && (attrs.name || attrs.title)) || (entry && entry.name) || '').trim();
+    const category = String((attrs && attrs.category) || (entry && entry.category) || '').trim();
+    const price = toNumber(attrs && attrs.price);
+
+    return {
+      sku,
+      name,
+      slug: String((attrs && attrs.slug) || '').trim(),
+      category,
+      price,
+      oldPrice: toNumber(attrs && attrs.oldPrice),
+      badge: String((attrs && attrs.badge) || '').trim(),
+      image: resolveImage({ image: imageField }, imageBaseUrl),
+      image2: resolveImage({ image: image2Field || imageField }, imageBaseUrl),
+      url: String((attrs && attrs.url) || '').trim() || (sku ? `product.html?sku=${encodeURIComponent(sku)}` : 'shop.html'),
+      description: String((attrs && attrs.description) || '').trim(),
+      model: String((attrs && attrs.model) || '').trim(),
+      about: String((attrs && attrs.about) || '').trim(),
+      specs: String((attrs && attrs.specs) || '').trim(),
+      stock: toNumber(attrs && attrs.stock),
+    };
+  };
+
+  const loadCatalogProducts = async (sourceOverride) => {
+    const localFallback = async () => {
+      const response = await fetch(sourceOverride || 'assets/data/products.json');
+      if (!response.ok) return [];
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    };
+
+    try {
+      const configResponse = await fetch('assets/data/cms-config.json');
+      if (!configResponse.ok) return await localFallback();
+      const config = await configResponse.json();
+      if (!config || !config.enabled || !config.endpoint) return await localFallback();
+
+      const headers = {};
+      if (config.authToken) headers.Authorization = `Bearer ${config.authToken}`;
+      const cmsResponse = await fetch(config.endpoint, { headers });
+      if (!cmsResponse.ok) throw new Error('CMS endpoint failed');
+      const payload = await cmsResponse.json();
+      const rows = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload.data) ? payload.data : []);
+      return rows.map((entry) => normalizeCmsItem(entry, config.imageBaseUrl || ''))
+        .filter((item) => item.sku && item.name && item.category && item.price > 0);
+    } catch (error) {
+      console.warn('Catalog loader fallback to local JSON:', error);
+      return await localFallback();
+    }
+  };
+
+  window.loadCatalogProducts = loadCatalogProducts;
+
+  loadCatalogProducts()
     .then((products) => {
       const normalized = Array.isArray(products) ? products.map((item) => ({
         sku: item.sku || '',

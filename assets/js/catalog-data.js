@@ -302,11 +302,20 @@
     var source = roots[0].getAttribute('data-catalog-source');
     if (!source) return;
 
-    fetch(source)
-      .then(function (response) {
-        if (!response.ok) throw new Error('Не удалось загрузить каталог');
-        return response.json();
-      })
+    var loader = typeof window.loadCatalogProducts === 'function'
+      ? function () { return window.loadCatalogProducts(source); }
+      : function () {
+          return fetch(source)
+            .then(function (response) {
+              if (!response.ok) throw new Error('Не удалось загрузить каталог');
+              return response.json();
+            })
+            .then(function (data) {
+              return Array.isArray(data) ? data : [];
+            });
+        };
+
+    loader()
       .then(function (products) {
         products = Array.isArray(products) ? products : [];
         roots.forEach(function (root) {
@@ -321,7 +330,7 @@
       })
       .catch(function (error) {
         console.error(error);
-        renderError(roots, 'Не удалось загрузить товары из assets/data/products.json. Открой сайт через локальный сервер или проверь файл данных.');
+        renderError(roots, 'Не удалось загрузить товары. Проверь assets/data/cms-config.json или локальный assets/data/products.json.');
       });
   }
 
