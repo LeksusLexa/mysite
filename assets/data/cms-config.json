@@ -1,7 +1,7 @@
 {
-  "enabled": false,
-  "endpoint": "https://your-cms-domain.com/api/products?populate=*",
+  "enabled": true,
+  "endpoint": "http://localhost:8055/items/products",
   "authToken": "",
   "imageBaseUrl": "",
-  "notes": "Set enabled=true and configure endpoint/authToken when you are ready to load products from Headless CMS."
+  "notes": "Local Directus products endpoint for development."
 }
