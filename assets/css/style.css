@@ -9382,30 +9382,35 @@ span.info__list--item-content {
 }
 
 .product__badge--items {
-  width: 5rem;
-  height: 2.3rem;
+  min-width: 5rem;
+  max-width: 11rem;
+  min-height: 2.3rem;
   background: var(--secondary-color);
   color: var(--white-color);
   font-size: 1.1rem;
-  line-height: 2.3rem;
+  line-height: 1.2;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.8rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 @media only screen and (min-width: 576px) {
   .product__badge--items {
-    width: 5.2rem;
-    height: 2.5rem;
+    min-width: 5.2rem;
+    min-height: 2.5rem;
     font-size: 1.2rem;
-    line-height: 2.5rem;
   }
 }
 
 @media only screen and (min-width: 768px) {
   .product__badge--items {
     font-size: 1.5rem;
-    width: 6rem;
-    height: 3rem;
-    line-height: 3rem;
+    min-width: 6rem;
+    min-height: 3rem;
   }
 }
 
