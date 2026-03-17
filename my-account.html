@@ -539,7 +539,7 @@
 <section class="my__account--section section--padding">
     <div class="container">
         <div class="cabinet">
-            <p class="cabinet__welcome">Здравствуйте, Никита. Управляйте заказами и адресом доставки в одном месте.</p>
+            <p class="cabinet__welcome">Здравствуйте. Управляйте заказами и адресом доставки в одном месте.</p>
             <div class="cabinet__layout">
                 <aside class="cabinet__card">
                     <h2 class="cabinet__title">Личный кабинет</h2>
@@ -548,7 +548,7 @@
                         <a href="my-account-2.html">Адреса доставки</a>
                         <a href="my-account-favorites.html">Избранное</a>
                         <a href="my-account-settings.html">Настройки профиля</a>
-                        <a href="login.html">Выйти</a>
+                        <a href="login.html" data-auth-logout>Выйти</a>
                     </nav>
                 </aside>
 
@@ -564,15 +564,15 @@
                         </div>
                         <div class="cabinet__metric">
                             <div class="cabinet__metric-label">Избранные товары</div>
-                            <div class="cabinet__metric-value">12</div>
+                            <div class="cabinet__metric-value" id="account-favorites-count">0</div>
                         </div>
                     </div>
 
                     <div class="cabinet__grid cabinet__grid--single">
                         <section class="cabinet__card">
                             <h3 class="cabinet__title">Адрес доставки</h3>
-                            <div class="cabinet__row"><span class="cabinet__label">Получатель</span><span class="cabinet__value">Никита Алехин</span></div>
-                            <div class="cabinet__row"><span class="cabinet__label">Телефон</span><span class="cabinet__value">+7 (999) 123-45-67</span></div>
+                            <div class="cabinet__row"><span class="cabinet__label">Получатель</span><span class="cabinet__value" id="account-profile-name">Пользователь</span></div>
+                            <div class="cabinet__row"><span class="cabinet__label">Телефон</span><span class="cabinet__value" id="account-profile-phone">Не указан</span></div>
                             <div class="cabinet__row"><span class="cabinet__label">Адрес</span><span class="cabinet__value">г. Москва, ул. Орджоникидзе, 11с1</span></div>
                         </section>
 
@@ -587,6 +587,7 @@
                                     <tr>
                                         <th>Заказ</th>
                                         <th>Дата</th>
+                                        <th>Статус</th>
                                         <th>Состав</th>
                                         <th>Итого</th>
                                         <th></th>
@@ -702,6 +703,7 @@
 
   <!-- Customscript js -->
   <script src="assets/js/script.js" defer="defer"></script>
+  <script src="assets/js/auth-ui.js" defer="defer"></script>
   
 </body>
 </html>

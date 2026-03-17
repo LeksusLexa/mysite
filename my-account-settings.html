@@ -614,7 +614,7 @@
                         <a href="my-account-2.html">Адреса доставки</a>
                         <a href="my-account-favorites.html">Избранное</a>
                         <a class="is-active" href="my-account-settings.html">Настройки профиля</a>
-                        <a href="login.html">Выйти</a>
+                        <a href="login.html" data-auth-logout>Выйти</a>
                     </nav>
                 </aside>
                 <div>
@@ -624,21 +624,21 @@
                             <div class="cabinet__form-grid">
                                 <div class="cabinet__field">
                                     <label for="profileName">Имя и фамилия</label>
-                                    <input id="profileName" name="name" type="text" value="Никита Алехин" required>
+                                    <input id="profileName" name="name" type="text" value="" required>
                                 </div>
                                 <div class="cabinet__field">
                                     <label for="profilePhone">Телефон</label>
-                                    <input id="profilePhone" name="phone" type="tel" value="+7 (999) 123-45-67" required>
+                                    <input id="profilePhone" name="phone" type="tel" value="" required>
                                 </div>
                             </div>
                             <div class="cabinet__form-grid">
                                 <div class="cabinet__field">
                                     <label for="profileEmail">Email</label>
-                                    <input id="profileEmail" name="email" type="email" value="nikita@example.com" required>
+                                    <input id="profileEmail" name="email" type="email" value="" required readonly>
                                 </div>
                                 <div class="cabinet__field">
                                     <label for="profileCity">Город</label>
-                                    <input id="profileCity" name="city" type="text" value="Москва">
+                                    <input id="profileCity" name="city" type="text" value="">
                                 </div>
                             </div>
                             <div class="cabinet__field">
@@ -647,7 +647,7 @@
                             </div>
                             <div class="cabinet__field">
                                 <label for="profileComment">Комментарий к заказам</label>
-                                <textarea id="profileComment" name="comment">Связь через WhatsApp в рабочие дни с 10:00 до 18:00.</textarea>
+                                <textarea id="profileComment" name="comment"></textarea>
                             </div>
                             <label class="cabinet__check"><input type="checkbox" id="notifySms" name="notifySms" checked> Получать SMS-уведомления о статусе заказа</label>
                             <label class="cabinet__check"><input type="checkbox" id="notifyEmail" name="notifyEmail" checked> Получать email-уведомления об акциях</label>
@@ -755,60 +755,6 @@
     <!-- Scroll top bar -->
     <button id="scroll__top"><svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 244l144-144 144 144M256 120v292"/></svg></button>
 
-  <script>
-    (function () {
-      var form = document.getElementById("profileSettingsForm");
-      var notice = document.getElementById("profileSaveNotice");
-      if (!form || !notice) return;
-
-      var storageKey = "cabinetProfileSettings";
-
-      function loadData() {
-        try {
-          var raw = localStorage.getItem(storageKey);
-          if (!raw) return null;
-          return JSON.parse(raw);
-        } catch (error) {
-          return null;
-        }
-      }
-
-      function applyData(data) {
-        if (!data) return;
-        Object.keys(data).forEach(function (key) {
-          var field = form.elements[key];
-          if (!field) return;
-          if (field.type === "checkbox") {
-            field.checked = Boolean(data[key]);
-            return;
-          }
-          field.value = data[key];
-        });
-      }
-
-      function readFormData() {
-        var data = {};
-        Array.prototype.forEach.call(form.elements, function (field) {
-          if (!field.name) return;
-          data[field.name] = field.type === "checkbox" ? field.checked : field.value;
-        });
-        return data;
-      }
-
-      applyData(loadData());
-
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        localStorage.setItem(storageKey, JSON.stringify(readFormData()));
-        notice.classList.add("is-visible");
-        setTimeout(function () {
-          notice.classList.remove("is-visible");
-        }, 1600);
-      });
-    })();
-  </script>
-    
-  
   <!-- All Script JS Plugins here  -->
   <script src="assets/js/vendor/popper.js" defer="defer"></script>
   <script src="assets/js/vendor/bootstrap.min.js" defer="defer"></script>
@@ -817,6 +763,8 @@
   <script src="assets/js/plugins/glightbox.min.js" defer="defer"></script>
 
   <!-- Customscript js -->
+  <script src="assets/js/auth-ui.js" defer="defer"></script>
+  <script src="assets/js/profile-settings-ui.js" defer="defer"></script>
   <script src="assets/js/script.js" defer="defer"></script>
   
 </body>

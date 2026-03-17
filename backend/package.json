@@ -1,0 +1,11 @@
+{
+  "name": "mysite-auth-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.2"
+  }
+}

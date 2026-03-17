@@ -640,7 +640,7 @@
                         <a class="is-active" href="my-account-2.html">Адреса доставки</a>
                         <a href="my-account-favorites.html">Избранное</a>
                         <a href="my-account-settings.html">Настройки профиля</a>
-                        <a href="login.html">Выйти</a>
+                        <a href="login.html" data-auth-logout>Выйти</a>
                     </nav>
                 </aside>
                 <div>
@@ -663,12 +663,24 @@
         <h4 class="cabinet-modal__title" id="addressModalTitle">Адрес доставки</h4>
         <form id="addressForm">
             <div class="cabinet-modal__group">
-                <label for="addressNameInput">Название адреса</label>
-                <input id="addressNameInput" name="name" type="text" placeholder="Например: Дом, Офис" required>
+                <label for="addressRecipientInput">Получатель</label>
+                <input id="addressRecipientInput" name="recipientName" type="text" placeholder="Имя и фамилия" required>
             </div>
             <div class="cabinet-modal__group">
-                <label for="addressDetailsInput">Получатель и адрес</label>
-                <textarea id="addressDetailsInput" name="details" placeholder="Имя, телефон&#10;Город, улица, дом" required></textarea>
+                <label for="addressPhoneInput">Телефон</label>
+                <input id="addressPhoneInput" name="phone" type="text" placeholder="+7 (___) ___-__-__" required>
+            </div>
+            <div class="cabinet-modal__group">
+                <label for="addressCityInput">Город</label>
+                <input id="addressCityInput" name="city" type="text" placeholder="Москва">
+            </div>
+            <div class="cabinet-modal__group">
+                <label for="addressLineInput">Адрес</label>
+                <textarea id="addressLineInput" name="addressLine" placeholder="Улица, дом, квартира" required></textarea>
+            </div>
+            <div class="cabinet-modal__group">
+                <label for="addressCommentInput">Комментарий</label>
+                <textarea id="addressCommentInput" name="comment" placeholder="Подъезд, этаж, код домофона"></textarea>
             </div>
             <label class="cabinet-modal__check">
                 <input id="addressDefaultInput" name="isDefault" type="checkbox">
@@ -772,224 +784,6 @@
     <!-- Scroll top bar -->
     <button id="scroll__top"><svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="M112 244l144-144 144 144M256 120v292"/></svg></button>
 
-  <script>
-    (function () {
-      var storageKey = "cabinetAddresses";
-      var defaultAddresses = [
-        {
-          id: "addr-home",
-          name: "Дом",
-          details: "Никита Алехин, +7 (999) 123-45-67\nг. Москва, ул. Орджоникидзе, 11с1, подъезд 2, этаж 5",
-          isDefault: true
-        },
-        {
-          id: "addr-office",
-          name: "Офис",
-          details: "Никита Алехин, +7 (999) 123-45-67\nг. Москва, Ленинградский пр-т, 37, БЦ Аэродом, офис 812",
-          isDefault: false
-        }
-      ];
-      var listEl = document.getElementById("addressList");
-      var addButton = document.getElementById("addAddressBtn");
-      var modal = document.getElementById("addressModal");
-      var form = document.getElementById("addressForm");
-      var nameInput = document.getElementById("addressNameInput");
-      var detailsInput = document.getElementById("addressDetailsInput");
-      var defaultInput = document.getElementById("addressDefaultInput");
-      var cancelButton = document.getElementById("addressCancelBtn");
-      var modalTitle = document.getElementById("addressModalTitle");
-      var editingId = null;
-
-      if (!listEl || !addButton || !modal || !form || !nameInput || !detailsInput || !defaultInput || !cancelButton || !modalTitle) {
-        return;
-      }
-
-      function escapeHtml(value) {
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
-      }
-
-      function loadAddresses() {
-        var raw = localStorage.getItem(storageKey);
-        if (raw === null) return defaultAddresses.slice();
-        try {
-          var parsed = JSON.parse(raw);
-          if (!Array.isArray(parsed)) return defaultAddresses.slice();
-          return parsed;
-        } catch (error) {
-          return defaultAddresses.slice();
-        }
-      }
-
-      function saveAddresses(addresses) {
-        localStorage.setItem(storageKey, JSON.stringify(addresses));
-      }
-
-      var addresses = loadAddresses();
-
-      function render() {
-        if (!addresses.length) {
-          listEl.innerHTML = '<div class="cabinet__empty">Список адресов пуст. Добавьте новый адрес доставки.</div>';
-          return;
-        }
-
-        listEl.innerHTML = addresses
-          .map(function (item) {
-            var tag = item.isDefault ? '<span class="cabinet__tag">По умолчанию</span>' : "";
-            var setDefaultBtn = item.isDefault
-              ? ""
-              : '<button class="cabinet__btn is-light" type="button" data-action="default" data-id="' + escapeHtml(item.id) + '">Сделать основным</button>';
-
-            return (
-              '<article class="cabinet__address' + (item.isDefault ? " is-default" : "") + '">' +
-                '<div class="cabinet__address-top">' +
-                  '<h4 class="cabinet__address-name">' + escapeHtml(item.name) + (item.isDefault ? " (основной)" : "") + '</h4>' +
-                  tag +
-                '</div>' +
-                '<p class="cabinet__address-text">' + escapeHtml(item.details).replace(/\n/g, "<br>") + '</p>' +
-                '<div class="cabinet__address-footer">' +
-                  setDefaultBtn +
-                  '<button class="cabinet__btn is-light" type="button" data-action="edit" data-id="' + escapeHtml(item.id) + '">Редактировать</button>' +
-                  '<button class="cabinet__btn is-light" type="button" data-action="delete" data-id="' + escapeHtml(item.id) + '">Удалить</button>' +
-                '</div>' +
-              '</article>'
-            );
-          })
-          .join("");
-      }
-
-      function findAddress(addressId) {
-        return addresses.find(function (item) { return item.id === addressId; });
-      }
-
-      function setDefault(addressId) {
-        addresses = addresses.map(function (item) {
-          return {
-            id: item.id,
-            name: item.name,
-            details: item.details,
-            isDefault: item.id === addressId
-          };
-        });
-      }
-
-      function openModal(config) {
-        editingId = config && config.address ? config.address.id : null;
-        modalTitle.textContent = editingId ? "Редактировать адрес" : "Добавить адрес";
-        nameInput.value = config && config.address ? config.address.name : "";
-        detailsInput.value = config && config.address ? config.address.details : "";
-        defaultInput.checked = config && config.address ? Boolean(config.address.isDefault) : addresses.length === 0;
-        modal.classList.add("is-open");
-        modal.setAttribute("aria-hidden", "false");
-        setTimeout(function () {
-          nameInput.focus();
-        }, 0);
-      }
-
-      function closeModal() {
-        modal.classList.remove("is-open");
-        modal.setAttribute("aria-hidden", "true");
-        form.reset();
-        editingId = null;
-      }
-
-      addButton.addEventListener("click", function () {
-        openModal();
-      });
-
-      cancelButton.addEventListener("click", closeModal);
-
-      modal.addEventListener("click", function (event) {
-        if (event.target === modal) {
-          closeModal();
-        }
-      });
-
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && modal.classList.contains("is-open")) {
-          closeModal();
-        }
-      });
-
-      listEl.addEventListener("click", function (event) {
-        var button = event.target.closest("button[data-action]");
-        if (!button) return;
-
-        var action = button.getAttribute("data-action");
-        var addressId = button.getAttribute("data-id");
-        var targetAddress = findAddress(addressId);
-        if (!targetAddress) return;
-
-        if (action === "edit") {
-          openModal({ address: targetAddress });
-          return;
-        }
-
-        if (action === "delete") {
-          var isConfirmed = confirm("Удалить адрес \"" + targetAddress.name + "\"?");
-          if (!isConfirmed) return;
-
-          var wasDefault = targetAddress.isDefault;
-          addresses = addresses.filter(function (item) { return item.id !== addressId; });
-          if (wasDefault && addresses.length) {
-            setDefault(addresses[0].id);
-          }
-          saveAddresses(addresses);
-          render();
-          return;
-        }
-
-        if (action === "default") {
-          setDefault(addressId);
-          saveAddresses(addresses);
-          render();
-        }
-      });
-
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        var name = nameInput.value.trim();
-        var details = detailsInput.value.trim();
-        if (!name || !details) return;
-
-        if (editingId) {
-          var current = findAddress(editingId);
-          if (!current) return;
-          current.name = name;
-          current.details = details;
-          current.isDefault = defaultInput.checked;
-        } else {
-          addresses.push({
-            id: "addr-" + Date.now(),
-            name: name,
-            details: details,
-            isDefault: defaultInput.checked || addresses.length === 0
-          });
-        }
-
-        if (defaultInput.checked) {
-          var targetId = editingId || addresses[addresses.length - 1].id;
-          setDefault(targetId);
-        } else if (!addresses.some(function (item) { return item.isDefault; }) && addresses.length) {
-          setDefault(addresses[0].id);
-        }
-
-        saveAddresses(addresses);
-        render();
-        closeModal();
-      });
-
-      saveAddresses(addresses);
-      render();
-    })();
-  </script>
-    
-  
   <!-- All Script JS Plugins here  -->
   <script src="assets/js/vendor/popper.js" defer="defer"></script>
   <script src="assets/js/vendor/bootstrap.min.js" defer="defer"></script>
@@ -998,6 +792,8 @@
   <script src="assets/js/plugins/glightbox.min.js" defer="defer"></script>
 
   <!-- Customscript js -->
+  <script src="assets/js/auth-ui.js" defer="defer"></script>
+  <script src="assets/js/addresses-ui.js" defer="defer"></script>
   <script src="assets/js/script.js" defer="defer"></script>
   
 </body>

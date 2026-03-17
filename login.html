@@ -18,6 +18,29 @@
   
   <!-- Custom Style CSS -->
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .auth__message {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .auth__message.is-visible {
+      display: block;
+    }
+    .auth__message.is-error {
+      background: #fff1f2;
+      color: #b42318;
+      border: 1px solid #fecdd3;
+    }
+    .auth__message.is-success {
+      background: #ecfdf3;
+      color: #067647;
+      border: 1px solid #abefc6;
+    }
+  </style>
 
 </head>
 
@@ -366,70 +389,70 @@
      <!-- Start login section  -->
 <div class="login__section section--padding">
     <div class="container">
-        <form action="#">
             <div class="login__section--inner">
                 <div class="row row-cols-md-2 row-cols-1">
                     <div class="col">
-                        <div class="account__login">
+                        <form class="account__login" id="login-form">
                             <div class="account__login--header mb-25">
                                 <h2 class="account__login--header__title h3 mb-10">Вход</h2>
                                 <p class="account__login--header__desc">Войдите, если вы уже зарегистрированы.</p>
                             </div>
                             <div class="account__login--inner">
                                 <label>
-                                    <input class="account__login--input" placeholder="Адрес электронной почты" type="email">
+                                    <input class="account__login--input" id="login-email" name="email" placeholder="Адрес электронной почты" type="email" autocomplete="email" required>
                                 </label>
                                 <label>
-                                    <input class="account__login--input" placeholder="Пароль" type="password">
+                                    <input class="account__login--input" id="login-password" name="password" placeholder="Пароль" type="password" autocomplete="current-password" required>
                                 </label>
                                 <div class="account__login--remember__forgot mb-15 d-flex justify-content-between align-items-center">
                                     <div class="account__login--remember position__relative">
-                                        <input class="checkout__checkbox--input" id="check1" type="checkbox">
+                                        <input class="checkout__checkbox--input" id="check1" type="checkbox" name="remember">
                                         <span class="checkout__checkbox--checkmark"></span>
                                         <label class="checkout__checkbox--label login__remember--label" for="check1">
                                             Запомнить меня</label>
                                     </div>
-                                    <button class="account__login--forgot" type="submit">Забыли пароль?</button>
+                                    <button class="account__login--forgot" type="button" disabled>Забыли пароль?</button>
                                 </div>
-                                <button class="account__login--btn primary__btn" type="submit">Войти</button>
-                                <p class="account__login--signup__text">Нет аккаунта? <button type="submit">Зарегистрироваться</button></p>
+                                <button class="account__login--btn primary__btn" id="login-submit" type="submit">Войти</button>
+                                <div class="auth__message" id="login-message"></div>
+                                <p class="account__login--signup__text">Нет аккаунта? <button type="button" data-scroll-target="#register-form">Зарегистрироваться</button></p>
                             </div>
-                        </div>
+                        </form>
                     </div>
                     <div class="col">
-                        <div class="account__login register">
+                        <form class="account__login register" id="register-form">
                             <div class="account__login--header mb-25">
                                 <h2 class="account__login--header__title h3 mb-10">Создать аккаунт</h2>
                                 <p class="account__login--header__desc">Зарегистрируйтесь, если вы новый пользователь</p>
                             </div>
                             <div class="account__login--inner">
                                 <label>
-                                    <input class="account__login--input" placeholder="Имя пользователя" type="text">
+                                    <input class="account__login--input" id="register-name" name="name" placeholder="Имя пользователя" type="text" autocomplete="name" required>
                                 </label>
                                 <label>
-                                    <input class="account__login--input" placeholder="Адрес электронной почты" type="email">
+                                    <input class="account__login--input" id="register-email" name="email" placeholder="Адрес электронной почты" type="email" autocomplete="email" required>
                                 </label>
                                 <label>
-                                    <input class="account__login--input" placeholder="Пароль" type="password">
+                                    <input class="account__login--input" id="register-password" name="password" placeholder="Пароль" type="password" autocomplete="new-password" required>
                                 </label>
                                 <label>
-                                    <input class="account__login--input" placeholder="Подтвердите пароль" type="password">
+                                    <input class="account__login--input" id="register-password-confirm" name="passwordConfirm" placeholder="Подтвердите пароль" type="password" autocomplete="new-password" required>
                                 </label>
                                 <label>
-                                    <button class="account__login--btn primary__btn mb-10" type="submit">Зарегистрироваться</button>
+                                    <button class="account__login--btn primary__btn mb-10" id="register-submit" type="submit">Зарегистрироваться</button>
                                 </label>
                                 <div class="account__login--remember position__relative">
-                                    <input class="checkout__checkbox--input" id="check2" type="checkbox">
+                                    <input class="checkout__checkbox--input" id="check2" type="checkbox" name="terms" required>
                                     <span class="checkout__checkbox--checkmark"></span>
                                     <label class="checkout__checkbox--label login__remember--label" for="check2">
                                         Я прочитал(а) и согласен(на) с условиями использования</label>
                                 </div>
+                                <div class="auth__message" id="register-message"></div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
-        </form>
     </div>     
 </div>
 <!-- End login section  -->
@@ -534,6 +557,7 @@
 
   <!-- Customscript js -->
   <script src="assets/js/script.js" defer="defer"></script>
+  <script src="assets/js/auth-ui.js" defer="defer"></script>
   
 </body>
 </html>

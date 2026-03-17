@@ -1235,6 +1235,10 @@ newsletterPopup();
 // checkout to account flow, and local order history.
 (() => {
   const ORDERS_KEY = "antenna_shop_orders_v1";
+  const WISHLIST_KEY = "antenna_shop_wishlist_v1";
+  const AUTH_STORAGE_KEY = "antenna_shop_auth_v1";
+  const AUTH_API_BASE = "http://localhost:8787/api";
+  let accountOrdersCache = [];
 
   const money = (n) => {
     const value = Number(n) || 0;
@@ -1284,6 +1288,44 @@ newsletterPopup();
     try {
       localStorage.setItem(ORDERS_KEY, JSON.stringify(Array.isArray(orders) ? orders : []));
     } catch (e) {}
+  };
+
+  const loadWishlistCount = () => {
+    try {
+      const raw = localStorage.getItem(WISHLIST_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.length : 0;
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  const loadAuthSession = () => {
+    try {
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const apiRequest = async (path, options = {}) => {
+    const session = loadAuthSession();
+    const token = session && session.token;
+    const response = await fetch(`${AUTH_API_BASE}${path}`, {
+      method: options.method || "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data && data.error ? data.error : "Ошибка запроса.");
+    }
+    return data;
   };
 
   const ensureOrders = () => {
@@ -1423,36 +1465,71 @@ newsletterPopup();
     });
   };
 
-  const renderAccountOrders = () => {
+  const renderAccountOrders = async () => {
     const tbody = document.getElementById("account-orders-body");
     if (!tbody) return;
 
-    const orders = ensureOrders().sort((a, b) => new Date(b.date) - new Date(a.date));
     const totalOrdersNode = document.getElementById("account-total-orders");
     const activeOrdersNode = document.getElementById("account-active-orders");
 
-    if (totalOrdersNode) totalOrdersNode.textContent = String(orders.length);
-    if (activeOrdersNode) activeOrdersNode.textContent = String(Math.min(orders.length, 2));
+    tbody.innerHTML =
+      "<tr>" +
+        "<td colspan='6' class='checkout-empty'>Загружаем историю заказов...</td>" +
+      "</tr>";
 
-    tbody.innerHTML = orders.map((order) => {
-      const itemsText = (order.items || [])
-        .map((item) => `${item.name} x${item.qty}`)
-        .join(", ");
-      return (
+    try {
+      const session = loadAuthSession();
+      if (!session || !session.token) {
+        throw new Error("Не выполнен вход.");
+      }
+
+      const result = await apiRequest("/me/orders");
+      const orders = Array.isArray(result.orders) ? result.orders : [];
+      accountOrdersCache = orders;
+
+      if (totalOrdersNode) totalOrdersNode.textContent = String(orders.length);
+      if (activeOrdersNode) {
+        activeOrdersNode.textContent = String(orders.filter((order) => order.isActive !== false).length);
+      }
+
+      if (!orders.length) {
+        tbody.innerHTML =
+          "<tr>" +
+            "<td colspan='6' class='checkout-empty'>У вас пока нет заказов.</td>" +
+          "</tr>";
+        showOrderDetails(null);
+        return;
+      }
+
+      tbody.innerHTML = orders.map((order) => {
+        const itemsText = (order.items || [])
+          .map((item) => `${item.name} x${item.qty}`)
+          .join(", ");
+        return (
+          "<tr>" +
+            `<td>#${escapeHtml(order.id)}</td>` +
+            `<td>${escapeHtml(formatDate(order.date))}</td>` +
+            `<td>${escapeHtml(order.statusLabel || "Новый")}</td>` +
+            `<td>${escapeHtml(itemsText)}</td>` +
+            `<td>${escapeHtml(money(order.total))}</td>` +
+            `<td><button class="order__detail--btn" type="button" data-order-detail="${escapeHtml(order.id)}">Посмотреть</button></td>` +
+          "</tr>"
+        );
+      }).join("");
+
+      const params = new URLSearchParams(window.location.search);
+      const selectedOrder = params.get("order");
+      if (selectedOrder) {
+        showOrderDetails(selectedOrder);
+      }
+    } catch (error) {
+      if (totalOrdersNode) totalOrdersNode.textContent = "0";
+      if (activeOrdersNode) activeOrdersNode.textContent = "0";
+      tbody.innerHTML =
         "<tr>" +
-          `<td>#${escapeHtml(order.id)}</td>` +
-          `<td>${escapeHtml(formatDate(order.date))}</td>` +
-          `<td>${escapeHtml(itemsText)}</td>` +
-          `<td>${escapeHtml(money(order.total))}</td>` +
-          `<td><button class="order__detail--btn" type="button" data-order-detail="${escapeHtml(order.id)}">Посмотреть</button></td>` +
-        "</tr>"
-      );
-    }).join("");
-
-    const params = new URLSearchParams(window.location.search);
-    const selectedOrder = params.get("order");
-    if (selectedOrder) {
-      showOrderDetails(selectedOrder);
+          `<td colspan='6' class='checkout-empty'>${escapeHtml(error.message || "Не удалось загрузить заказы.")}</td>` +
+        "</tr>";
+      showOrderDetails(null);
     }
   };
 
@@ -1460,8 +1537,7 @@ newsletterPopup();
     const panel = document.getElementById("account-order-details");
     if (!panel) return;
 
-    const orders = ensureOrders();
-    const order = orders.find((item) => String(item.id) === String(orderId).replace("#", ""));
+    const order = accountOrdersCache.find((item) => String(item.id) === String(orderId || "").replace("#", ""));
     if (!order) {
       panel.style.display = "none";
       panel.innerHTML = "";
@@ -1476,6 +1552,8 @@ newsletterPopup();
         `<div class="account-order-details__item"><span class="cabinet__label">Телефон</span><span class="cabinet__value">${escapeHtml(order.phone || "-")}</span></div>` +
         `<div class="account-order-details__item"><span class="cabinet__label">Получение</span><span class="cabinet__value">${order.deliveryType === "delivery" ? "Доставка" : "Самовывоз"}</span></div>` +
         `<div class="account-order-details__item"><span class="cabinet__label">Оплата</span><span class="cabinet__value">${escapeHtml(order.paymentLabel || "-")}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Статус оплаты</span><span class="cabinet__value">${escapeHtml(order.paymentStatusLabel || "Ожидает оплаты")}</span></div>` +
+        `<div class="account-order-details__item"><span class="cabinet__label">Статус</span><span class="cabinet__value">${escapeHtml(order.statusLabel || "В обработке")}</span></div>` +
         `<div class="account-order-details__item"><span class="cabinet__label">Адрес</span><span class="cabinet__value">${escapeHtml(order.address || "-")}</span></div>` +
       "</div>" +
       '<div class="account-order-details__products">' +
@@ -1486,6 +1564,7 @@ newsletterPopup();
           ).join("") +
         "</ul>" +
       "</div>";
+    panel.style.display = "none";
     panel.style.display = "block";
   };
 
@@ -1495,6 +1574,12 @@ newsletterPopup();
       if (!btn) return;
       showOrderDetails(btn.getAttribute("data-order-detail"));
     });
+  };
+
+  const renderFavoritesMetric = () => {
+    const favoritesNode = document.getElementById("account-favorites-count");
+    if (!favoritesNode) return;
+    favoritesNode.textContent = String(loadWishlistCount());
   };
 
   const setupCheckout = () => {
@@ -1515,6 +1600,45 @@ newsletterPopup();
     const submitOrderBtn = document.getElementById("checkout-submit-order");
     const invoiceBtn = document.getElementById("checkout-invoice");
     const storePayBtn = document.getElementById("checkout-store-pay");
+    const session = loadAuthSession();
+    const sessionUser = (session && session.user) || {};
+    let checkoutAddresses = [];
+
+    const prefillCheckout = () => {
+      const emailInput = document.getElementById("checkout-email");
+      const phoneInput = document.getElementById("checkout-phone");
+      const firstNameInput = document.getElementById("input1");
+      const lastNameInput = document.getElementById("input2");
+
+      if (emailInput && !emailInput.value && sessionUser.email) emailInput.value = sessionUser.email;
+      if (phoneInput && !phoneInput.value && sessionUser.phone) phoneInput.value = sessionUser.phone;
+      if (firstNameInput && !firstNameInput.value && sessionUser.firstName) firstNameInput.value = sessionUser.firstName;
+      if (lastNameInput && !lastNameInput.value && sessionUser.lastName) lastNameInput.value = sessionUser.lastName;
+    };
+
+    const renderAddressOptions = () => {
+      if (!addressSelect) return;
+      if (!checkoutAddresses.length) {
+        addressSelect.innerHTML = '<option value="new">Новый адрес</option>';
+        addressSelect.value = "new";
+        return;
+      }
+
+      addressSelect.innerHTML = checkoutAddresses.map((item) => {
+        const label = item.summary || item.addressLine || item.city || "Адрес";
+        return `<option value="${escapeHtml(item.id)}"${item.isDefault ? " selected" : ""}>${escapeHtml(label)}</option>`;
+      }).join("") + '<option value="new">Новый адрес</option>';
+    };
+
+    const loadCheckoutAddresses = async () => {
+      const authSession = loadAuthSession();
+      if (!authSession || !authSession.token) return;
+      try {
+        const result = await apiRequest("/me/addresses");
+        checkoutAddresses = Array.isArray(result.addresses) ? result.addresses : [];
+        renderAddressOptions();
+      } catch (error) {}
+    };
 
     const getCart = () => (window.MiniCart && typeof window.MiniCart.get === "function" ? window.MiniCart.get() : []);
 
@@ -1544,7 +1668,10 @@ newsletterPopup();
     const syncAddressState = () => {
       const isNew = addressSelect && addressSelect.value === "new";
       if (newAddressBlock) newAddressBlock.style.display = isNew ? "block" : "none";
-      if (pickupAddress && addressSelect && !isNew) pickupAddress.textContent = addressSelect.value;
+      if (pickupAddress && addressSelect && !isNew) {
+        const selected = checkoutAddresses.find((item) => String(item.id) === String(addressSelect.value));
+        pickupAddress.textContent = selected ? (selected.summary || selected.addressLine || "Адрес") : "";
+      }
     };
 
     const syncMethodState = () => {
@@ -1559,10 +1686,17 @@ newsletterPopup();
       if (summaryNode) summaryNode.textContent = isDelivery ? "Доставка" : "Самовывоз";
     };
 
-    const placeOrder = (paymentLabel) => {
+    const placeOrder = async (paymentLabel, paymentMethod) => {
       const cart = getCart();
       if (!cart.length) {
         window.alert("Корзина пуста.");
+        return;
+      }
+
+      const authSession = loadAuthSession();
+      if (!authSession || !authSession.token) {
+        window.alert("Сначала войдите в аккаунт, чтобы оформить заказ.");
+        window.location.href = "login.html";
         return;
       }
 
@@ -1573,7 +1707,13 @@ newsletterPopup();
       const lastName = ((((document.getElementById("input2") || {}).value) || "").trim()) || "";
       const company = ((((document.getElementById("input3") || {}).value) || "").trim()) || "";
       const deliveryAddress = ((((document.getElementById("input4") || {}).value) || "").trim()) || "";
-      const selectedAddress = (((addressSelect || {}).value) === "new" ? ((((customAddressInput || {}).value) || "").trim()) || "" : ((addressSelect || {}).value) || "");
+      const selectedAddressId = ((addressSelect || {}).value) || "";
+      const selectedAddressMeta = selectedAddressId === "new"
+        ? null
+        : (checkoutAddresses.find((item) => String(item.id) === String(selectedAddressId)) || null);
+      const selectedAddress = selectedAddressId === "new"
+        ? ((((customAddressInput || {}).value) || "").trim()) || ""
+        : ((selectedAddressMeta || {}).summary || "");
 
       if (!email || !phone) {
         window.alert("Заполните Email и номер.");
@@ -1585,47 +1725,68 @@ newsletterPopup();
         return;
       }
 
-      const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
-      const orderId = String(Date.now()).slice(-6);
-      const order = {
-        id: orderId,
-        date: new Date().toISOString(),
-        deliveryType,
-        paymentLabel,
-        email,
-        phone,
-        company,
-        address: deliveryType === "delivery" ? deliveryAddress : selectedAddress,
-        recipient: [firstName, lastName].filter(Boolean).join(" "),
-        items: cart.map((item) => ({
-          name: item.name,
-          qty: item.qty,
-          price: item.price,
-        })),
-        total,
-      };
+      const buttons = [submitOrderBtn, invoiceBtn, storePayBtn].filter(Boolean);
+      buttons.forEach((button) => { button.disabled = true; });
 
-      const orders = ensureOrders();
-      orders.unshift(order);
-      saveOrders(orders);
+      try {
+        const result = await apiRequest("/orders", {
+          method: "POST",
+          body: {
+            paymentLabel,
+            paymentMethod,
+            deliveryType,
+            email,
+            phone,
+            company,
+            address: deliveryType === "delivery" ? deliveryAddress : selectedAddress,
+            recipient: [firstName, lastName].filter(Boolean).join(" "),
+            saveAddress: deliveryType === "delivery" && selectedAddressId === "new" && Boolean(deliveryAddress),
+            addressMeta: deliveryType === "delivery" ? {
+              recipientName: [firstName, lastName].filter(Boolean).join(" "),
+              phone,
+              city: "",
+              addressLine: deliveryAddress,
+              comment: company || "",
+              isDefault: !checkoutAddresses.length,
+            } : (selectedAddressMeta ? {
+              recipientName: selectedAddressMeta.recipientName,
+              phone: selectedAddressMeta.phone,
+              city: selectedAddressMeta.city,
+              addressLine: selectedAddressMeta.addressLine,
+              comment: selectedAddressMeta.comment,
+              isDefault: selectedAddressMeta.isDefault,
+            } : null),
+            items: cart.map((item) => ({
+              sku: item.sku || item.id || "",
+              name: item.name,
+              qty: item.qty,
+              price: item.price,
+            })),
+          },
+        });
 
-      if (window.MiniCart && typeof window.MiniCart.clear === "function") {
-        window.MiniCart.clear();
+        if (window.MiniCart && typeof window.MiniCart.clear === "function") {
+          window.MiniCart.clear();
+        }
+
+        window.location.href = `my-account.html?order=${encodeURIComponent(result.order.id)}`;
+      } catch (error) {
+        window.alert(error.message || "Не удалось оформить заказ.");
+      } finally {
+        buttons.forEach((button) => { button.disabled = false; });
       }
-
-      window.location.href = `my-account.html?order=${encodeURIComponent(orderId)}`;
     };
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      placeOrder("Оформить заказ");
+      placeOrder("Оформить заказ", "submit");
     });
 
     if (invoiceBtn) {
-      invoiceBtn.addEventListener("click", () => placeOrder("Оплата по счету"));
+      invoiceBtn.addEventListener("click", () => placeOrder("Оплата по счету", "invoice"));
     }
     if (storePayBtn) {
-      storePayBtn.addEventListener("click", () => placeOrder("Оплата в магазине"));
+      storePayBtn.addEventListener("click", () => placeOrder("Оплата в магазине", "store"));
     }
     if (addressSelect) {
       addressSelect.addEventListener("change", () => {
@@ -1637,6 +1798,8 @@ newsletterPopup();
     });
 
     renderSummary();
+    prefillCheckout();
+    loadCheckoutAddresses().then(syncAddressState);
     syncAddressState();
     syncMethodState();
     window.addEventListener("focus", renderSummary);
@@ -1649,8 +1812,12 @@ newsletterPopup();
   simplifyBlogDetails();
   trimShopSidebar();
   setupAccountOrderDetails();
+  renderFavoritesMetric();
   renderAccountOrders();
   setupCheckout();
+  window.addEventListener("storage", (event) => {
+    if (event.key === WISHLIST_KEY) renderFavoritesMetric();
+  });
 })();
 
 // Global compare actions (catalog cards + quickview) with mini panel
