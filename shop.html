@@ -1601,6 +1601,21 @@
     return wrap;
   }
 
+  function ensureSearchFirst(mount){
+    if(!mount) return;
+
+    var widgets = qsa('.single__widget', mount);
+    if(!widgets.length) return;
+
+    var searchWidget = widgets.find(function(widget){
+      var title = qs('.widget__title', widget);
+      return title && title.textContent.trim() === 'Поиск';
+    });
+
+    if(!searchWidget || !mount.firstElementChild || mount.firstElementChild === searchWidget) return;
+    mount.insertBefore(searchWidget, mount.firstElementChild);
+  }
+
   function getQueryFromUrl(){
     try {
       var params = new URLSearchParams(window.location.search || '');
@@ -1765,6 +1780,9 @@
 
     buildCategoryWidget(categories, desktopMount);
     buildCategoryWidget(categories, offcanvasMount);
+
+    ensureSearchFirst(desktopMount);
+    ensureSearchFirst(offcanvasMount);
 
     // Bind after injection
     bindUI(products);

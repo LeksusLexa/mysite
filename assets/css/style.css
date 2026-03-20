@@ -2849,6 +2849,12 @@ body.overlay__active::before,
   line-height: 2rem;
 }
 
+.main__logo--img {
+  width: auto;
+  height: auto;
+  max-height: 6.4rem;
+}
+
 @media only screen and (max-width: 575px) {
   .main__logo--img {
     max-width: 120px;
@@ -2863,6 +2869,10 @@ body.overlay__active::before,
 
 .header__topbar {
   padding: 1.2rem 0;
+}
+
+.related__post--area {
+  display: none !important;
 }
 
 @media only screen and (max-width: 991px) {
