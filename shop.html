@@ -1625,10 +1625,40 @@
     }
   }
 
+  function getCategoryFromUrl(){
+    try {
+      var params = new URLSearchParams(window.location.search || '');
+      return params.get('category') || '';
+    } catch(e){
+      return '';
+    }
+  }
+
   function applyUrlQueryToInputs(){
     var query = getQueryFromUrl();
     if(!query) return;
     qsa('.widget__search--form__input').forEach(function(inp){ inp.value = query; });
+  }
+
+  function applyUrlCategoryToInputs(){
+    var category = getCategoryFromUrl();
+    if(!category) return;
+
+    var normalizedCategory = norm(category);
+    var matched = false;
+
+    qsa('.js-cat-input').forEach(function(input){
+      if(norm(input.value) === normalizedCategory){
+        input.checked = true;
+        matched = true;
+      }
+    });
+
+    if(!matched){
+      qsa('.widget__search--form__input').forEach(function(inp){
+        if(!inp.value) inp.value = category;
+      });
+    }
   }
 
   function getState(){
@@ -1788,6 +1818,7 @@
     bindUI(products);
 
     applyUrlQueryToInputs();
+    applyUrlCategoryToInputs();
 
     // initial apply
     applyFilters(products);
