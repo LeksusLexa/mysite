@@ -6281,6 +6281,18 @@ span.info__list--item-content {
   border-radius: 4px;
   -webkit-transition: var(--transition);
   transition: var(--transition);
+  height: 100%;
+  min-height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
 }
 
 .single__counterup:hover {
@@ -6341,6 +6353,17 @@ span.info__list--item-content {
 
 .counterup__title {
   margin-bottom: 1.2rem;
+  min-height: 4.4rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  text-align: center;
 }
 
 @media only screen and (min-width: 768px) {
@@ -6357,9 +6380,10 @@ span.info__list--item-content {
 
 @media only screen and (max-width: 479px) {
   .counterup__title {
-    font-size: 1.5rem;
-    line-height: 2.2rem;
-    margin-bottom: 1rem;
+    font-size: 1.4rem;
+    line-height: 2rem;
+    min-height: 4rem;
+    margin-bottom: 0.8rem;
   }
 }
 
@@ -6401,6 +6425,53 @@ span.info__list--item-content {
   .counterup__number {
     font-size: 5rem;
     line-height: 5rem;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .counterup__section .section__heading.mb-50 {
+    margin-bottom: 3rem;
+  }
+  .counterup__section .section__heading--desc {
+    max-width: 52rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .counterup__icon {
+    min-height: 4.8rem;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+  }
+}
+
+@media only screen and (max-width: 575px) {
+  .counterup__section.section--padding {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+  .single__counterup {
+    padding: 1.8rem 1rem;
+    min-height: 18rem;
+  }
+  .counterup__number {
+    font-size: 2.6rem;
+    line-height: 2.8rem;
+  }
+}
+
+@media only screen and (max-width: 374px) {
+  .counterup__section .row.row-cols-2 > * {
+    width: 100%;
+  }
+  .single__counterup {
+    min-height: auto;
   }
 }
 
